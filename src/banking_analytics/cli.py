@@ -3,9 +3,15 @@
 from pathlib import Path
 from typing import Annotated
 
+import httpx
 import typer
 
-from banking_analytics.bcb.cosif import build_source_inventory, write_source_inventory
+from banking_analytics.bcb.cosif import (
+    build_source_catalog,
+    build_source_inventory,
+    write_source_catalog,
+    write_source_inventory,
+)
 
 app = typer.Typer(help="Brazilian banking analytics data tools.")
 
@@ -52,6 +58,32 @@ def source_inventory(
         f"available={len(available)}, errors={len(errors)}, latest={latest}."
     )
     if errors:
+        raise typer.Exit(code=1)
+
+
+@app.command("source-catalog")
+def source_catalog(
+    output: Annotated[Path, typer.Option("--output", help="Catalog CSV path.")] = Path(
+        "artifacts/source_catalog.csv"
+    ),
+    timeout_seconds: Annotated[float, typer.Option("--timeout", min=1.0)] = 20.0,
+) -> None:
+    """Read the official BCB bank-file catalog and publish its records."""
+    try:
+        records = build_source_catalog(timeout_seconds=timeout_seconds)
+    except (httpx.HTTPError, ValueError) as exc:
+        typer.echo(f"BCB bank catalog failed: {type(exc).__name__}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    written = write_source_catalog(records, output)
+    errors = [record for record in records if record.error]
+    periods = [record.period for record in records if record.period]
+    latest = max(periods) if periods else "none"
+    typer.echo(
+        f"Wrote {written} catalog records to {output}; "
+        f"errors={len(errors)}, latest={latest}."
+    )
+    if errors or not periods:
         raise typer.Exit(code=1)
 
 

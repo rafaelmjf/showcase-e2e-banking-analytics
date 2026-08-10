@@ -43,18 +43,33 @@ jobs:
           uv run --locked ruff check src tests
           uv run --locked pytest
 
+      - name: Read official source catalog
+        id: catalog
+        continue-on-error: true
+        run: >-
+          uv run --locked banking-data source-catalog
+          --output artifacts/source_catalog.csv
+
       - name: Build live source inventory
+        id: inventory
+        continue-on-error: true
         run: >-
           uv run --locked banking-data source-inventory
           --start "${{ inputs.start_period }}"
           --end "${{ inputs.end_period }}"
           --output artifacts/source_inventory.csv
 
-      - name: Preserve source inventory
+      - name: Preserve source evidence
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: cosif-source-inventory-${{ inputs.start_period }}-${{ inputs.end_period }}
-          path: artifacts/source_inventory.csv
+          name: cosif-source-evidence-${{ inputs.start_period }}-${{ inputs.end_period }}
+          path: artifacts/source_*.csv
           if-no-files-found: error
           retention-days: 30
+
+      - name: Enforce checkpoint exit gate
+        if: always()
+        run: |
+          test "${{ steps.catalog.outcome }}" = "success"
+          test "${{ steps.inventory.outcome }}" = "success"

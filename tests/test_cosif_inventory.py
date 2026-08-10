@@ -5,8 +5,11 @@ import pytest
 
 from banking_analytics.bcb.cosif import (
     build_bank_url,
+    build_source_catalog,
     build_source_inventory,
     iter_periods,
+    parse_bank_catalog,
+    write_source_catalog,
     write_source_inventory,
 )
 
@@ -107,3 +110,79 @@ def test_write_source_inventory_creates_stable_csv(tmp_path: Path) -> None:
     content = output.read_text(encoding="utf-8")
     assert content.startswith("period,url,probe_method,available,status_code")
     assert "202501" in content
+
+
+def test_parse_bank_catalog_preserves_files_and_anomalies() -> None:
+    payload = {
+        "conteudo": [
+            {
+                "Titulo": "Balancete Bancos 03/2026",
+                "DataDocumento": "2026-05-31T00:00:00",
+                "Url": "/content/estabilidadefinanceira/cosif/Bancos/202603BANCOS.csv.zip",
+            },
+            {"Titulo": "Unexpected document", "Url": "/not-a-bank-file.pdf"},
+            "unexpected",
+        ]
+    }
+
+    records = parse_bank_catalog(payload, discovered_at_utc="2026-08-11T00:00:00+00:00")
+
+    assert records[0].period == "202603"
+    assert records[0].source_url == (
+        "https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/"
+        "202603BANCOS.csv.zip"
+    )
+    assert records[0].error is None
+    assert records[1].period is None
+    assert records[1].error == "Unrecognized or missing bank file URL"
+    assert records[2].error == "Catalog item is not an object"
+
+
+def test_build_source_catalog_uses_official_catalog() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path.endswith("/Documentos/byListGuid")
+        assert request.url.params["pasta"] == "/Bancos"
+        return httpx.Response(
+            200,
+            json={
+                "conteudo": [
+                    {
+                        "Url": (
+                            "/content/estabilidadefinanceira/cosif/Bancos/"
+                            "202603BANCOS.csv.zip"
+                        )
+                    }
+                ]
+            },
+        )
+
+    records = build_source_catalog(transport=httpx.MockTransport(handler))
+
+    assert [record.period for record in records] == ["202603"]
+
+
+def test_write_source_catalog_creates_stable_csv(tmp_path: Path) -> None:
+    records = parse_bank_catalog(
+        {
+            "conteudo": [
+                {
+                    "Url": (
+                        "/content/estabilidadefinanceira/cosif/Bancos/"
+                        "202603BANCOS.csv.zip"
+                    )
+                }
+            ]
+        },
+        discovered_at_utc="2026-08-11T00:00:00+00:00",
+    )
+    output = tmp_path / "catalog.csv"
+
+    assert write_source_catalog(records, output) == 1
+    assert output.read_text(encoding="utf-8").startswith(
+        "period,title,source_url,document_date,discovered_at_utc,error"
+    )
+
+
+def test_parse_bank_catalog_requires_content_list() -> None:
+    with pytest.raises(ValueError, match="conteudo"):
+        parse_bank_catalog({}, discovered_at_utc="2026-08-11T00:00:00+00:00")
