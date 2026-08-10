@@ -29,7 +29,7 @@ failed or unverified checkpoint into the next one:
 
 | Checkpoint | Deliverable | Exit gate |
 |---|---|---|
-| 0A | COSIF bank-file availability inventory | Tested command, live CSV, zero probe errors, handover updated |
+| 0A | COSIF bank-file availability inventory | Tested catalog and probe commands, live catalog with zero parse errors, active versions resolved, handover updated |
 | 0B | Downloaded-file schema and volume profile | Checksums, row counts, schemas and document/institution/account coverage published |
 | 0C | Total-assets and top-15 decision | Account mapping reconciled and reproducible latest-complete-period ranking published |
 | 0D | Five-series macro profile | Official metadata, frequency, units and monthly alignment rules validated |

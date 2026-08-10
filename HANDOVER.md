@@ -4,57 +4,57 @@ Updated: 2026-08-11
 
 ## Current state
 
-The public repository and revised MVP plan exist. WP0 checkpoint 0A has implemented
-and tested the COSIF bank-file availability inventory command. No ingestion,
+WP0 checkpoint 0A is complete. The official COSIF document catalog and direct file
+probe are implemented, tested and preserved as repository evidence. No ingestion,
 database models, Dagster assets or Power BI files have been implemented.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
 comparison population, five monthly macro themes, two report pages and a trust panel.
 
-The earlier source check confirmed the current BCB bulk URL pattern and a January
-2026 bank file with 49,364 balance rows. The new command deliberately records HTTP
-failures as unknown rather than incorrectly marking files absent, and falls back
-from `HEAD` to a streamed range request when required.
+The official catalog currently contains 454 records, 453 active periods and one
+superseded file version. The MVP range has 15 published months from 202501 through
+202603. December 2025 has two catalog entries; the later 2026-04-01 publication is
+selected deterministically as active.
 
 Verification completed:
 
 - `uv run --locked ruff check src tests` — passed;
-- `uv run --locked pytest` — 11 passed;
+- `uv run --locked pytest` — 21 passed;
 - a live 202601 probe on 11 August 2026 — blocked by HTTP 502 from the official BCB
   host through both Python and direct `curl`;
 - GitHub Actions run `31442891635` — locked installation, Ruff and 11 tests passed;
   the independent Ubuntu runner then observed HTTP 502 for all 20 periods from
   202501 through 202608 and preserved its CSV artifact.
 
-The failed CSV was not retained as an availability artifact because it did not
-establish availability. See `docs/checkpoints/00a-source-availability.md`.
+GitHub Actions [run 31444011968](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31444011968)
+successfully read and parsed the official catalog with zero errors. Its catalog and
+direct-probe results are committed under `artifacts/`.
 
 An independent manual GitHub Actions path now exists at
 `.github/workflows/source-availability.yml`. It runs the same locked tests and probe
-on an Ubuntu runner and preserves the CSV for 30 days even when the probe fails. The
-latest evidence is [run 31442891635](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31442891635).
+on an Ubuntu runner and preserves the catalog and probe CSVs for 30 days. The latest
+evidence is [run 31444011968](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31444011968).
 
-The known January 2026 file was probed again at 2026-08-10 23:36:54 UTC and still
-returned HTTP 502 after the range fallback. This was the third consecutive goal turn
-with the same external blocker, so active implementation is paused at the 0A gate.
+Direct access to all 20 tested URLs still returned HTTP 502. This is now an 0B file
+download blocker, not an 0A publication-discovery blocker. HTTP failures remain
+unknown accessibility, never false absence.
 
 ## Next action
 
-Resume checkpoint 0A from `plan/08-delivery.md` after the official host recovers:
+Begin checkpoint 0B from `plan/08-delivery.md` using the catalog-selected active
+URLs. Retry the bounded download first:
 
 ```powershell
-uv run --locked banking-data source-inventory --start 202501 --end 202608 `
+uv run --locked banking-data source-inventory --start 202501 --end 202603 `
+  --catalog artifacts/source_catalog.csv `
   --output artifacts/source_inventory.csv
 ```
 
-The command must finish with `errors=0`. Review the CSV, update the 0A checkpoint
-record, commit it, and only then begin 0B (download and schema/volume profiling).
-If the local BCB route still fails, dispatch the **Source availability checkpoint**
-workflow with the same start and end periods and inspect its artifact.
-
-Once either path reports `errors=0`, resume the goal at 0A; no redesign or additional
-decision is required.
+When file access recovers, download active 202501–202603 files, record SHA-256 and
+byte counts, then publish the schema/volume profile. The active December 2025 URL is
+the replacement ending in `202512BANCOS.zip.csv.zip`, not the earlier conventional
+filename.
 
 Do not begin the full dbt model until findings are recorded in
 `docs/source-profile.md`.

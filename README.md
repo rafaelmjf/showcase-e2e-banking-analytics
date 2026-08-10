@@ -36,9 +36,9 @@ been implemented yet.
 - The MVP analytical period is January 2025 through the latest published month.
 - The MVP uses banks only and the current COSIF standard; earlier history and
   consolidated scopes are explicitly deferred.
-- Checkpoint 0A now has a tested availability-inventory command. Its live inventory
-  is waiting on recovery of the official BCB host after an HTTP 502 response on
-  11 August 2026; downstream profiling has not started with unverified inputs.
+- Checkpoint 0A is complete: the official catalog confirms 15 published MVP months
+  from January 2025 through March 2026 and identifies one superseded December 2025
+  file. Checkpoint 0B is waiting for recovery of direct file access after HTTP 502.
 
 Start with the [implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).

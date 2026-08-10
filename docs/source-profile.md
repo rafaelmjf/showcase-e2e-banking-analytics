@@ -4,19 +4,15 @@ Updated: 2026-08-11
 
 ## Status
 
-WP0 is active and checkpointed. Checkpoint 0A is implementation-complete but its
-live evidence is blocked by an official-endpoint failure reproduced locally and on
-an independent GitHub-hosted runner. No source-availability conclusion is drawn
-from HTTP 502 responses, and checkpoints 0B–0E have not started.
-
-After three consecutive goal turns reproduced the same HTTP 502 condition, work is
-formally paused pending recovery of the official endpoint. The resume command and
-independent workflow are recorded in `HANDOVER.md`.
+WP0 is active and checkpointed. Checkpoint 0A is complete from the official live
+catalog: 15 MVP months are published from 202501 through 202603. Direct file access
+is currently failing with HTTP 502, so 0B has started at its download gate but no
+source bodies have been certified in this checkpoint.
 
 | Checkpoint | Status | Evidence |
 |---|---|---|
-| 0A — source availability | Blocked on live validation | [Checkpoint record](checkpoints/00a-source-availability.md) |
-| 0B — schema and volume | Not started | — |
+| 0A — source availability | Complete | [Checkpoint record](checkpoints/00a-source-availability.md) |
+| 0B — schema and volume | In progress; download blocked by HTTP 502 | — |
 | 0C — total assets and top 15 | Not started | — |
 | 0D — macro series | Not started | — |
 | 0E — readiness decision | Not started | — |

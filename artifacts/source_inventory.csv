@@ -1,0 +1,21 @@
+period,url,probe_method,available,status_code,content_length_bytes,content_type,last_modified,etag,checked_at_utc,error
+202501,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202501BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202502,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202502BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202503,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202503BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202504,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202504BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3ea-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202505,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202505BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202506,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202506BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3ea-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202507,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202507BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202508,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202508BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3ea-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202509,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202509BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3ea-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202510,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202510BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3ea-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202511,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202511BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202512,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202512BANCOS.zip.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3ea-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202601,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202601BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202602,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202602BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202603,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202603BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3ea-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202604,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202604BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3ea-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202605,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202605BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202606,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202606BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202607,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202607BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3e9-1397""",2026-08-10T23:53:13+00:00,HTTP 502
+202608,https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/202608BANCOS.csv.zip,GET_RANGE,,502,5015,text/html,,"""6a63f3ea-1397""",2026-08-10T23:53:13+00:00,HTTP 502
