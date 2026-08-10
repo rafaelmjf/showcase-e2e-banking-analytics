@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "banking-analytics"
+version = "0.1.0"
+description = "Data platform for the Brazilian banking analytics showcase"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "MIT"
+authors = [{ name = "Rafael Figueiredo" }]
+dependencies = [
+  "dagster==1.13.17",
+  "dagster-dbt==0.29.17",
+  "dagster-dlt==0.29.17",
+  "dagster-webserver==1.13.17",
+  "dbt-core==1.11.12",
+  "dbt-postgres==1.11.0",
+  "dlt[postgres]==1.29.1",
+  "httpx==0.28.1",
+  "psycopg[binary]==3.3.4",
+  "pydantic-settings>=2.15,<3",
+  "typer==0.27.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==9.1.1",
+  "ruff==0.16.2",
+]
+
+[project.scripts]
+banking-data = "banking_analytics.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/banking_analytics"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+

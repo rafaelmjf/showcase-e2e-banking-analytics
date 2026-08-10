@@ -1,0 +1,20 @@
+services:
+  warehouse:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ${BANKING_POSTGRES_DB:-banking}
+      POSTGRES_USER: ${BANKING_POSTGRES_USER:-banking}
+      POSTGRES_PASSWORD: ${BANKING_POSTGRES_PASSWORD:-banking_local_only}
+    ports:
+      - "${BANKING_POSTGRES_PORT:-55433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${BANKING_POSTGRES_USER:-banking} -d ${BANKING_POSTGRES_DB:-banking}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - banking_postgres_data:/var/lib/postgresql
+
+volumes:
+  banking_postgres_data:
+
