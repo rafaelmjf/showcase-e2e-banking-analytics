@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import csv
 import re
-from collections.abc import Iterable, Iterator
-from dataclasses import asdict, dataclass
+from collections import defaultdict
+from collections.abc import Iterable, Iterator, Mapping
+from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -53,6 +54,8 @@ class CatalogRecord:
     """One bank file advertised by the official BCB document catalog."""
 
     period: str | None
+    period_version: int | None
+    is_active: bool | None
     title: str | None
     source_url: str | None
     document_date: str | None
@@ -113,6 +116,8 @@ def parse_bank_catalog(
             records.append(
                 CatalogRecord(
                     period=None,
+                    period_version=None,
+                    is_active=None,
                     title=None,
                     source_url=None,
                     document_date=None,
@@ -124,12 +129,18 @@ def parse_bank_catalog(
 
         raw_url = _optional_text(item.get("Url"))
         source_url = urljoin("https://www.bcb.gov.br", raw_url) if raw_url else None
-        period_match = re.search(r"/(\d{6})BANCOS\.csv\.zip$", source_url or "", re.I)
+        period_match = re.search(
+            r"/(\d{6})BANCOS(?:\.[^/?#]+)+$",
+            source_url or "",
+            re.I,
+        )
         period = period_match.group(1) if period_match else None
         error = None if period else "Unrecognized or missing bank file URL"
         records.append(
             CatalogRecord(
                 period=period,
+                period_version=None,
+                is_active=None,
                 title=_first_text(item, "Titulo", "Nome", "Title", "Name"),
                 source_url=source_url,
                 document_date=_first_text(item, "DataDocumento", "DataPublicacao"),
@@ -137,6 +148,24 @@ def parse_bank_catalog(
                 error=error,
             )
         )
+    by_period: dict[str, list[int]] = defaultdict(list)
+    for index, record in enumerate(records):
+        if record.period:
+            by_period[record.period].append(index)
+
+    for indexes in by_period.values():
+        indexes.sort(
+            key=lambda index: (
+                records[index].document_date or "",
+                records[index].source_url or "",
+            )
+        )
+        for version, index in enumerate(indexes, start=1):
+            records[index] = replace(
+                records[index],
+                period_version=version,
+                is_active=version == len(indexes),
+            )
     return records
 
 
@@ -162,9 +191,10 @@ def probe_bank_period(
     period: str,
     *,
     checked_at_utc: str,
+    url: str | None = None,
 ) -> AvailabilityRecord:
     """Probe one official bank file without downloading its body."""
-    url = build_bank_url(period)
+    url = url or build_bank_url(period)
     try:
         response = client.head(url)
         if response.status_code in {httpx.codes.OK, httpx.codes.NOT_FOUND}:
@@ -251,6 +281,7 @@ def build_source_inventory(
     *,
     timeout_seconds: float = 20.0,
     transport: httpx.BaseTransport | None = None,
+    url_by_period: Mapping[str, str] | None = None,
 ) -> list[AvailabilityRecord]:
     """Probe an inclusive range of official bank files."""
     checked_at_utc = datetime.now(UTC).replace(microsecond=0).isoformat()
@@ -262,7 +293,12 @@ def build_source_inventory(
         transport=transport,
     ) as client:
         return [
-            probe_bank_period(client, period, checked_at_utc=checked_at_utc)
+            probe_bank_period(
+                client,
+                period,
+                checked_at_utc=checked_at_utc,
+                url=(url_by_period or {}).get(period),
+            )
             for period in iter_periods(start_period, end_period)
         ]
 
@@ -314,3 +350,24 @@ def write_source_catalog(records: Iterable[CatalogRecord], output_path: Path) ->
         writer.writeheader()
         writer.writerows(record.as_dict() for record in materialized)
     return len(materialized)
+
+
+def read_active_catalog_urls(catalog_path: Path) -> dict[str, str]:
+    """Read active period URLs from a catalog CSV produced by this project."""
+    with catalog_path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+
+    active_urls: dict[str, str] = {}
+    for row in rows:
+        if row.get("is_active", "").lower() != "true":
+            continue
+        period = row.get("period", "").strip()
+        source_url = row.get("source_url", "").strip()
+        if not period or not source_url:
+            raise ValueError("Active catalog row is missing period or source_url")
+        if period in active_urls:
+            raise ValueError(f"Catalog contains multiple active URLs for period {period}")
+        active_urls[period] = source_url
+    if not active_urls:
+        raise ValueError("Catalog contains no active bank file URLs")
+    return active_urls

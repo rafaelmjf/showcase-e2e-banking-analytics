@@ -9,6 +9,7 @@ import typer
 from banking_analytics.bcb.cosif import (
     build_source_catalog,
     build_source_inventory,
+    read_active_catalog_urls,
     write_source_catalog,
     write_source_inventory,
 )
@@ -38,15 +39,21 @@ def source_inventory(
         "artifacts/source_inventory.csv"
     ),
     timeout_seconds: Annotated[float, typer.Option("--timeout", min=1.0)] = 20.0,
+    catalog: Annotated[
+        Path | None,
+        typer.Option("--catalog", help="Catalog CSV used for active source URLs."),
+    ] = None,
 ) -> None:
     """Probe official COSIF bank files and publish an availability inventory."""
     try:
+        url_by_period = read_active_catalog_urls(catalog) if catalog else None
         records = build_source_inventory(
             start_period,
             end_period,
             timeout_seconds=timeout_seconds,
+            url_by_period=url_by_period,
         )
-    except ValueError as exc:
+    except (OSError, ValueError) as exc:
         raise typer.BadParameter(str(exc)) from exc
 
     written = write_source_inventory(records, output)
@@ -78,9 +85,12 @@ def source_catalog(
     written = write_source_catalog(records, output)
     errors = [record for record in records if record.error]
     periods = [record.period for record in records if record.period]
+    active = [record for record in records if record.is_active]
+    duplicate_periods = len(records) - len(active)
     latest = max(periods) if periods else "none"
     typer.echo(
         f"Wrote {written} catalog records to {output}; "
+        f"active={len(active)}, duplicate_versions={duplicate_periods}, "
         f"errors={len(errors)}, latest={latest}."
     )
     if errors or not periods:

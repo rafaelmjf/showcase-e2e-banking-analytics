@@ -9,6 +9,7 @@ from banking_analytics.bcb.cosif import (
     build_source_inventory,
     iter_periods,
     parse_bank_catalog,
+    read_active_catalog_urls,
     write_source_catalog,
     write_source_inventory,
 )
@@ -128,6 +129,8 @@ def test_parse_bank_catalog_preserves_files_and_anomalies() -> None:
     records = parse_bank_catalog(payload, discovered_at_utc="2026-08-11T00:00:00+00:00")
 
     assert records[0].period == "202603"
+    assert records[0].period_version == 1
+    assert records[0].is_active is True
     assert records[0].source_url == (
         "https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/"
         "202603BANCOS.csv.zip"
@@ -161,6 +164,27 @@ def test_build_source_catalog_uses_official_catalog() -> None:
     assert [record.period for record in records] == ["202603"]
 
 
+@pytest.mark.parametrize(
+    ("url", "period"),
+    [
+        ("/content/cosif/Bancos/202301BANCOS.csv", "202301"),
+        ("/content/cosif/Bancos/202212BANCOS.ZIP", "202212"),
+        ("/content/cosif/Bancos/202512BANCOS.zip.csv.zip", "202512"),
+    ],
+)
+def test_catalog_accepts_official_historical_filename_variants(
+    url: str,
+    period: str,
+) -> None:
+    record = parse_bank_catalog(
+        {"conteudo": [{"Url": url}]},
+        discovered_at_utc="2026-08-11T00:00:00+00:00",
+    )[0]
+
+    assert record.period == period
+    assert record.error is None
+
+
 def test_write_source_catalog_creates_stable_csv(tmp_path: Path) -> None:
     records = parse_bank_catalog(
         {
@@ -179,10 +203,84 @@ def test_write_source_catalog_creates_stable_csv(tmp_path: Path) -> None:
 
     assert write_source_catalog(records, output) == 1
     assert output.read_text(encoding="utf-8").startswith(
-        "period,title,source_url,document_date,discovered_at_utc,error"
+        "period,period_version,is_active,title,source_url,document_date,"
+        "discovered_at_utc,error"
     )
 
 
 def test_parse_bank_catalog_requires_content_list() -> None:
     with pytest.raises(ValueError, match="conteudo"):
         parse_bank_catalog({}, discovered_at_utc="2026-08-11T00:00:00+00:00")
+
+
+def test_catalog_selects_latest_duplicate_as_active() -> None:
+    records = parse_bank_catalog(
+        {
+            "conteudo": [
+                {
+                    "DataDocumento": "2025-12-01T03:00:00Z",
+                    "Url": "/content/cosif/Bancos/202512BANCOS.csv.zip",
+                },
+                {
+                    "DataDocumento": "2026-04-01T22:13:22Z",
+                    "Url": "/content/cosif/Bancos/202512BANCOS.zip.csv.zip",
+                },
+            ]
+        },
+        discovered_at_utc="2026-08-11T00:00:00+00:00",
+    )
+
+    assert [(record.period_version, record.is_active) for record in records] == [
+        (1, False),
+        (2, True),
+    ]
+
+
+def test_inventory_uses_catalog_selected_url() -> None:
+    observed_urls: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        observed_urls.append(str(request.url))
+        return httpx.Response(200)
+
+    replacement_url = (
+        "https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/Bancos/"
+        "202512BANCOS.zip.csv.zip"
+    )
+    build_source_inventory(
+        "202512",
+        "202512",
+        url_by_period={"202512": replacement_url},
+        transport=httpx.MockTransport(handler),
+    )
+
+    assert observed_urls == [replacement_url]
+
+
+def test_read_active_catalog_urls(tmp_path: Path) -> None:
+    records = parse_bank_catalog(
+        {
+            "conteudo": [
+                {
+                    "DataDocumento": "2025-12-01T03:00:00Z",
+                    "Url": "/content/cosif/Bancos/202512BANCOS.csv.zip",
+                },
+                {
+                    "DataDocumento": "2026-04-01T22:13:22Z",
+                    "Url": "/content/cosif/Bancos/202512BANCOS.zip.csv.zip",
+                },
+            ]
+        },
+        discovered_at_utc="2026-08-11T00:00:00+00:00",
+    )
+    output = tmp_path / "catalog.csv"
+    write_source_catalog(records, output)
+
+    active = read_active_catalog_urls(output)
+
+    assert active == {
+        "202512": (
+            "https://www.bcb.gov.br/content/cosif/Bancos/"
+            "202512BANCOS.zip.csv.zip"
+        )
+    }

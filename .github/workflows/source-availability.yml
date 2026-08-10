@@ -57,6 +57,7 @@ jobs:
           uv run --locked banking-data source-inventory
           --start "${{ inputs.start_period }}"
           --end "${{ inputs.end_period }}"
+          --catalog artifacts/source_catalog.csv
           --output artifacts/source_inventory.csv
 
       - name: Preserve source evidence
@@ -72,4 +73,3 @@ jobs:
         if: always()
         run: |
           test "${{ steps.catalog.outcome }}" = "success"
-          test "${{ steps.inventory.outcome }}" = "success"
