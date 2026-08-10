@@ -9,6 +9,10 @@ live evidence is blocked by an official-endpoint failure reproduced locally and 
 an independent GitHub-hosted runner. No source-availability conclusion is drawn
 from HTTP 502 responses, and checkpoints 0B–0E have not started.
 
+After three consecutive goal turns reproduced the same HTTP 502 condition, work is
+formally paused pending recovery of the official endpoint. The resume command and
+independent workflow are recorded in `HANDOVER.md`.
+
 | Checkpoint | Status | Evidence |
 |---|---|---|
 | 0A — source availability | Blocked on live validation | [Checkpoint record](checkpoints/00a-source-availability.md) |

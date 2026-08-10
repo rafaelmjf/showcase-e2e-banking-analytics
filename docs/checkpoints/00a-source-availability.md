@@ -68,6 +68,12 @@ completed the independent check on 11 August 2026:
 This independently reproduces the endpoint failure. It does not provide evidence
 that any of the 20 source files are absent.
 
+A third local probe of the known January 2026 file at 2026-08-10 23:36:54 UTC again
+returned HTTP 502 after the range fallback. The repeated external condition now
+meets the project's blocked-work threshold. The implementation and resume paths are
+ready, but the live 0A exit gate cannot be satisfied until the official endpoint
+recovers.
+
 ## Exit gate and next action
 
 Status: **blocked on live validation**.

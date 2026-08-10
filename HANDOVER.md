@@ -35,6 +35,10 @@ An independent manual GitHub Actions path now exists at
 on an Ubuntu runner and preserves the CSV for 30 days even when the probe fails. The
 latest evidence is [run 31442891635](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31442891635).
 
+The known January 2026 file was probed again at 2026-08-10 23:36:54 UTC and still
+returned HTTP 502 after the range fallback. This was the third consecutive goal turn
+with the same external blocker, so active implementation is paused at the 0A gate.
+
 ## Next action
 
 Resume checkpoint 0A from `plan/08-delivery.md` after the official host recovers:
@@ -48,6 +52,9 @@ The command must finish with `errors=0`. Review the CSV, update the 0A checkpoin
 record, commit it, and only then begin 0B (download and schema/volume profiling).
 If the local BCB route still fails, dispatch the **Source availability checkpoint**
 workflow with the same start and end periods and inspect its artifact.
+
+Once either path reports `errors=0`, resume the goal at 0A; no redesign or additional
+decision is required.
 
 Do not begin the full dbt model until findings are recorded in
 `docs/source-profile.md`.
