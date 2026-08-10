@@ -55,6 +55,19 @@ provides `.github/workflows/source-availability.yml`. This manual workflow runs 
 locked verification and inventory on an Ubuntu GitHub-hosted runner, then preserves
 the CSV artifact even if unknown periods make the job fail.
 
+[GitHub Actions run 31442891635](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31442891635)
+completed the independent check on 11 August 2026:
+
+- locked dependency installation passed;
+- Ruff passed;
+- all 11 tests passed;
+- 20 periods were probed from 202501 through 202608;
+- every period returned HTTP 502 after the range fallback;
+- the CSV was retained as the workflow artifact for 30 days.
+
+This independently reproduces the endpoint failure. It does not provide evidence
+that any of the 20 source files are absent.
+
 ## Exit gate and next action
 
 Status: **blocked on live validation**.

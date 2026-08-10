@@ -5,9 +5,9 @@ Updated: 2026-08-11
 ## Status
 
 WP0 is active and checkpointed. Checkpoint 0A is implementation-complete but its
-live evidence is blocked by a transient failure at the official BCB host. No source
-availability conclusion is drawn from HTTP 502 responses, and checkpoints 0B–0E
-have not started.
+live evidence is blocked by an official-endpoint failure reproduced locally and on
+an independent GitHub-hosted runner. No source-availability conclusion is drawn
+from HTTP 502 responses, and checkpoints 0B–0E have not started.
 
 | Checkpoint | Status | Evidence |
 |---|---|---|

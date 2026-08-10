@@ -22,14 +22,18 @@ Verification completed:
 - `uv run --locked ruff check src tests` — passed;
 - `uv run --locked pytest` — 11 passed;
 - a live 202601 probe on 11 August 2026 — blocked by HTTP 502 from the official BCB
-  host through both Python and direct `curl`.
+  host through both Python and direct `curl`;
+- GitHub Actions run `31442891635` — locked installation, Ruff and 11 tests passed;
+  the independent Ubuntu runner then observed HTTP 502 for all 20 periods from
+  202501 through 202608 and preserved its CSV artifact.
 
 The failed CSV was not retained as an availability artifact because it did not
 establish availability. See `docs/checkpoints/00a-source-availability.md`.
 
 An independent manual GitHub Actions path now exists at
 `.github/workflows/source-availability.yml`. It runs the same locked tests and probe
-on an Ubuntu runner and preserves the CSV for 30 days even when the probe fails.
+on an Ubuntu runner and preserves the CSV for 30 days even when the probe fails. The
+latest evidence is [run 31442891635](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31442891635).
 
 ## Next action
 
