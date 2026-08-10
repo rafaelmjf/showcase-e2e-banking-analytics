@@ -1,0 +1,60 @@
+name: Source availability checkpoint
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_period:
+        description: First COSIF bank period (YYYYMM)
+        required: true
+        default: "202501"
+      end_period:
+        description: Last COSIF bank period (YYYYMM)
+        required: true
+        default: "202608"
+
+permissions:
+  contents: read
+
+jobs:
+  inventory:
+    name: Test and probe official COSIF files
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9
+        with:
+          version: "0.11.19"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install Python
+        run: uv python install 3.12
+
+      - name: Install locked project
+        run: uv sync --locked --extra dev
+
+      - name: Verify checkpoint implementation
+        run: |
+          uv run --locked ruff check src tests
+          uv run --locked pytest
+
+      - name: Build live source inventory
+        run: >-
+          uv run --locked banking-data source-inventory
+          --start "${{ inputs.start_period }}"
+          --end "${{ inputs.end_period }}"
+          --output artifacts/source_inventory.csv
+
+      - name: Preserve source inventory
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cosif-source-inventory-${{ inputs.start_period }}-${{ inputs.end_period }}
+          path: artifacts/source_inventory.csv
+          if-no-files-found: error
+          retention-days: 30

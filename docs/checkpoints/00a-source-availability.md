@@ -50,6 +50,11 @@ This does not overturn the earlier successful profile of the same January 2026 U
 (902,381 compressed bytes and 49,364 balance rows). It means only that the inventory
 cannot be refreshed and independently validated at this checkpoint.
 
+To separate a BCB-wide outage from a local network-path problem, the repository also
+provides `.github/workflows/source-availability.yml`. This manual workflow runs the
+locked verification and inventory on an Ubuntu GitHub-hosted runner, then preserves
+the CSV artifact even if unknown periods make the job fail.
+
 ## Exit gate and next action
 
 Status: **blocked on live validation**.

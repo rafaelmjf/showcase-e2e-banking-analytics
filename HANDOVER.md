@@ -27,6 +27,10 @@ Verification completed:
 The failed CSV was not retained as an availability artifact because it did not
 establish availability. See `docs/checkpoints/00a-source-availability.md`.
 
+An independent manual GitHub Actions path now exists at
+`.github/workflows/source-availability.yml`. It runs the same locked tests and probe
+on an Ubuntu runner and preserves the CSV for 30 days even when the probe fails.
+
 ## Next action
 
 Resume checkpoint 0A from `plan/08-delivery.md` after the official host recovers:
@@ -38,6 +42,8 @@ uv run --locked banking-data source-inventory --start 202501 --end 202608 `
 
 The command must finish with `errors=0`. Review the CSV, update the 0A checkpoint
 record, commit it, and only then begin 0B (download and schema/volume profiling).
+If the local BCB route still fails, dispatch the **Source availability checkpoint**
+workflow with the same start and end periods and inspect its artifact.
 
 Do not begin the full dbt model until findings are recorded in
 `docs/source-profile.md`.
