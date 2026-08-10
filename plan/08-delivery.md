@@ -24,6 +24,20 @@ needed by the two report pages.
 **Evidence:** source profile, volume table, schema observations, institution/account
 coverage and draft reporting-line mapping.
 
+Phase 0 is delivered through independently reviewable checkpoints. Do not roll a
+failed or unverified checkpoint into the next one:
+
+| Checkpoint | Deliverable | Exit gate |
+|---|---|---|
+| 0A | COSIF bank-file availability inventory | Tested command, live CSV, zero probe errors, handover updated |
+| 0B | Downloaded-file schema and volume profile | Checksums, row counts, schemas and document/institution/account coverage published |
+| 0C | Total-assets and top-15 decision | Account mapping reconciled and reproducible latest-complete-period ranking published |
+| 0D | Five-series macro profile | Official metadata, frequency, units and monthly alignment rules validated |
+| 0E | Source-profile decision | Findings, bounded reporting-line draft and implementation-readiness decision published |
+
+At every exit gate: run the relevant tests, update `HANDOVER.md`, commit the evidence,
+check goal usage, and stop for review before consuming the next package.
+
 ### Phase 1 — Data layer
 
 Implement dlt sources, PostgreSQL landing, dbt core/marts/tests, Dagster assets,
@@ -83,4 +97,3 @@ prioritised gates in [09-future-enhancements.md](09-future-enhancements.md).
 6. Banking Pulse, Compare Banks and the trust panel are complete.
 7. Documentation explains the project without requiring COSIF knowledge.
 8. MIT and ODbL boundaries are correctly published.
-

@@ -26,8 +26,8 @@ reasoning is recorded in [ADR 0001](docs/adr/0001-initial-stack.md).
 
 ## Current status
 
-Planning and source profiling only. No production data pipeline or BI model has been
-implemented yet.
+WP0 source profiling is in progress. No production data pipeline or BI model has
+been implemented yet.
 
 - The official BCB balance-sheet bulk-download pattern is confirmed.
 - A January 2026 banks file was profiled: 0.90 MB compressed, 6.12 MB expanded and
@@ -36,8 +36,12 @@ implemented yet.
 - The MVP analytical period is January 2025 through the latest published month.
 - The MVP uses banks only and the current COSIF standard; earlier history and
   consolidated scopes are explicitly deferred.
+- Checkpoint 0A now has a tested availability-inventory command. Its live inventory
+  is waiting on recovery of the official BCB host after an HTTP 502 response on
+  11 August 2026; downstream profiling has not started with unverified inputs.
 
-Start with the [implementation plan](plan/README.md).
+Start with the [implementation plan](plan/README.md), the live
+[source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).
 
 Public-facing framing: **Where do Brazil's largest banks get their money, where do
 they put it, and how has that changed under high interest rates?**
