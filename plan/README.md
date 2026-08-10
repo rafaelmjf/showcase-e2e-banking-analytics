@@ -29,23 +29,26 @@ hierarchy control, engineering discipline, metric governance and communication.
 | [06-semantic-and-report.md](06-semantic-and-report.md) | Measures, report pages and interpretation limits | BI layer |
 | [07-testing-governance.md](07-testing-governance.md) | Reconciliation, regression tests and documentation | shared |
 | [08-delivery.md](08-delivery.md) | Phases, work packages and handoff boundary | shared |
+| [09-future-enhancements.md](09-future-enhancements.md) | Prioritised BCB dataset extensions after the MVP | shared |
 
 ## Standing decisions
 
-1. Start with **banks** and **prudential conglomerates**; add other segments only
-   after duplicate and consolidation risks are understood.
-2. Cover **January 2021 through the latest published period**. This deliberately
-   crosses the January 2025 COSIF redesign.
-3. Include macroeconomic context from the first release.
-4. Model directly into a canonical core and dimensional marts. Do not use Data Vault
+1. Start with **banks only** and select a stable top-15 comparison set using total
+   assets in the latest complete source period.
+2. Cover **January 2025 through the latest published period**. Pre-2025 history and
+   taxonomy bridging are later enhancements.
+3. Include a small, monthly macroeconomic context set from the first release.
+4. Keep checksum and load-manifest evidence, but do not build restatement analytics
+   or a bi-temporal consumption model in the MVP.
+5. Model directly into a canonical core and dimensional marts. Do not use Data Vault
    when one official source family and stable reporting keys do not justify it.
-5. Preserve every downloaded file version by checksum. Restatements are data, not an
-   overwrite.
-6. Keep native-frequency macro observations and publish an explicitly aligned monthly
-   context mart.
-7. Use a small number of decision-grade report pages. Do not build a COSIF account
+6. Keep native source observations for lineage but expose only authored monthly
+   macro context to the MVP.
+7. Use two decision-grade report pages plus a compact trust panel. Do not build a COSIF account
    browser disguised as a product.
-8. Do not claim causation from macroeconomic correlations.
+8. Lead with understandable banking questions; COSIF is the evidence layer, not the
+   public headline.
+9. Do not claim causation from macroeconomic correlations.
 
 ## Initial stack decision
 
@@ -72,13 +75,20 @@ consumption object, grain, column, type, nullability, business meaning, quality 
 and reference row count. The BI layer must not depend on raw, staging or intermediate
 schemas.
 
-## Open decisions that require profiling, not preference
+## Decisions closed for the MVP
 
-1. Whether consolidated prudential data or individual bank data is the primary
-   comparison grain.
-2. The exact effective-dated mapping between pre-2025 and post-2025 COSIF accounts.
-3. Which balance-sheet lines are sufficiently comparable for public KPIs.
-4. Whether quarterly IF.data selected indicators add value beyond the COSIF files.
-5. Whether institution-level complaints have a stable enough current download path
-   for phase two.
+1. Primary scope: individual bank files only.
+2. Time range: January 2025 onward.
+3. Comparison population: latest-period top 15 by total assets, held stable over the
+   report period.
+4. Report: two pages plus a trust panel.
+5. Stack: dlt, PostgreSQL, dbt, Dagster and Power BI.
 
+## Decisions still requiring profiling
+
+1. Which current-standard COSIF accounts safely define the small set of public
+   reporting lines.
+2. Whether all months from January 2025 are comparable within the current standard.
+3. The exact monthly macro series and aggregation rules.
+4. Whether institution name/CNPJ history needs a Type-2 dimension within the short
+   MVP period.

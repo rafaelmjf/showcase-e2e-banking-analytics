@@ -2,29 +2,28 @@
 
 **Owner: data layer.**
 
-## Source A — BCB COSIF balance files
+## Source A — BCB COSIF bank balance files
 
-Official periodic balance data for financial institutions and conglomerates.
+Official periodic balance data for financial institutions.
 
-| Property | Initial decision |
+| Property | MVP decision |
 |---|---|
 | Access | Parameterised BCB CSV ZIP downloads by reporting month and segment |
 | License | Open Data Commons Open Database License (ODbL) |
-| Initial period | January 2021 through latest published |
-| Initial segments | Banks and prudential conglomerates |
-| Source grain | Reporting date × document × institution/conglomerate × agency × COSIF account |
-| Key fields | Date, document, CNPJ, agency, institution name, conglomerate code/name, taxonomy, account, account name, balance |
-| Currency | BRL for the selected period |
+| Period | January 2025 through latest published |
+| Segment | Banks (`BANCOS`) only |
+| Source grain | Reporting date × document × institution × agency × COSIF account |
+| Key fields | Date, document, CNPJ, agency, institution name, taxonomy, account, account name, balance |
+| Currency | BRL |
 
 ### Confirmed current URL pattern
 
 ```text
 https://www.bcb.gov.br/content/estabilidadefinanceira/cosif/
-  {segment}/{yyyymm}{segment_code}.csv.zip
+  Bancos/{yyyymm}BANCOS.csv.zip
 ```
 
-Relevant segment codes include `BANCOS`, `BLOPRUDENCIAL`, `COOPERATIVAS`,
-`SOCIEDADES`, `CONSORCIOS`, `COMBINADOS` and `LIQUIDACAO`.
+Other segments exist but are not MVP inputs.
 
 ### Profiling evidence — 11 August 2026
 
@@ -36,67 +35,67 @@ Relevant segment codes include `BANCOS`, `BLOPRUDENCIAL`, `COOPERATIVAS`,
 - The current file has four metadata/header lines before the data and uses semicolon
   delimiters plus comma decimals.
 
-These figures size the source but are not yet a completeness certification.
+These figures size the source but are not a completeness certification.
 
-### The 2025 boundary
-
-The BCB introduced a new accounting standard from January 2025. Account structures
-and report composition must therefore be treated as versioned taxonomies. Trend lines
-crossing this boundary require one of three explicit statuses:
-
-1. directly comparable,
-2. mapped with a documented rule, or
-3. not comparable.
-
-No string-similarity mapping of account names is allowed to certify comparability.
-
-### Source defects and risks to preserve
+### MVP source controls
 
 | Risk | Treatment |
 |---|---|
-| Reissued files | Append by checksum; expose active and superseded versions |
-| Individual and consolidated overlap | Separate comparison scopes and prevent double counting |
+| Reissued file | Store URL, checksum, generation date and retrieval time in the manifest; load the latest complete file |
 | Mixed document codes | Retain document as part of the fact grain |
-| Institution name changes | Type-2 dimension keyed by source identifier and effective period |
-| Account taxonomy changes | Versioned account dimension and governed mapping bridge |
-| Result accounts reset in June/December | Do not publish naive monthly profitability measures |
-| Delayed publication | Report source period and retrieval freshness separately |
+| Institution name change | Preserve CNPJ and source-period name; promote to Type 2 only if profiling proves necessary |
 | Encoding and locale | Detect encoding; parse semicolon and comma-decimal explicitly |
+| Delayed publication | Report source period separately from retrieval freshness |
+| Missing account mapping | Retain account and expose unmapped coverage |
 
-## Source B — BCB SGS macroeconomic and credit series
+The MVP does not publish a restatement fact or a cross-taxonomy mapping. File evidence
+is retained so those features can be added later without reacquiring history.
 
-Initial curated series registry:
+## Source B — BCB monthly macroeconomic and credit context
 
-| Theme | Candidate SGS code | Native frequency | Purpose |
-|---|---:|---|---|
-| Selic target | 432 | Event/daily observation | Monetary-policy regime |
-| Effective Selic | 1178 | Daily | Realised interest-rate environment |
-| IPCA | 433 | Monthly | Inflation context; verify current catalog metadata |
-| IBC-Br | 24363 | Monthly | Economic activity context |
-| USD/BRL | 10813 | Daily | Exchange-rate context |
-| System credit balance | 20539 | Monthly | Market growth benchmark |
-| System 90+ day delinquency | 21082 | Monthly | Credit-cycle risk benchmark |
+The MVP publishes a deliberately small monthly set:
 
-Each series must have authored metadata: official title, definition, unit, frequency,
-source URL, aggregation rule and whether revisions are possible. Codes are not accepted
-into production from memory alone; the ingestion registry must verify the official
-metadata endpoint.
+| Theme | Candidate source | MVP treatment |
+|---|---|---|
+| Selic | SGS 4189 or an explicitly month-aligned target series | One monthly interest-rate context value |
+| IPCA | SGS 433 | Monthly inflation and rolling 12-month measure |
+| Economic activity | SGS 24363, IBC-Br | Monthly level and change |
+| System credit balance | SGS 20539 | Monthly market growth benchmark |
+| System 90+ day delinquency | SGS 21082 | Monthly credit-cycle risk benchmark |
+
+Exact codes, definitions, units and aggregation rules must be verified from official
+metadata during profiling. USD/BRL is excluded unless the selected balance-sheet story
+shows a clear need.
+
+Each accepted series receives authored metadata: official title, definition, unit,
+frequency, source URL, monthly rule and revision behavior.
+
+## Top-15 comparison population
+
+The selected institutions are the top 15 banks by the certified total-assets line in
+the latest complete source period available when the MVP contract is frozen. That set
+is held stable across earlier MVP months so entry and exit do not create artificial
+market-share changes. The report states that it is a comparison population, not the
+entire Brazilian financial system.
 
 ## License and distribution
 
-BCB catalog entries are ODbL. Full raw files will not be committed to Git. The public
-repository will include acquisition code, synthetic contract fixtures, source
-metadata and checksums. Any distributed derivative database or produced work must
-carry the required attribution and license notice.
+BCB catalog entries are ODbL. Full raw files are not committed to Git. The public
+repository includes acquisition code, synthetic contract fixtures, source metadata
+and checksums. Public produced works carry BCB and ODbL attribution.
 
 ## Profiling gates before implementation
 
-1. Download 24 consecutive months for banks and prudential conglomerates.
-2. Record row counts, compressed bytes, schemas, document codes and institution counts.
-3. Quantify duplicate business grains within and across segments.
-4. Inspect replacements by downloading the same period on two different dates when
-   possible.
-5. Profile the 2024/2025 account transition and produce a first mapping-coverage table.
-6. Validate every macro series, unit and alignment rule from official metadata.
-7. Decide the primary comparison grain only after the duplicate analysis.
+1. Download every available `BANCOS` month from January 2025 onward.
+2. Record rows, bytes, columns, document codes, institutions and accounts by month.
+3. Confirm the current COSIF structure is internally consistent over the period.
+4. Identify the official total-assets account and select the stable top 15.
+5. Draft only the reporting lines needed by the two report pages.
+6. Validate each macro series, unit and monthly rule from official metadata.
+7. Publish a source profile before freezing dbt models or report measures.
+
+## Future source families
+
+Institution-level complaints, IF.data, lending rates, Pix, ESTBAN and institution
+registry data are intentionally deferred. See [09-future-enhancements.md](09-future-enhancements.md).
 

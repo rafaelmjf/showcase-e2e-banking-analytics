@@ -33,10 +33,14 @@ implemented yet.
 - A January 2026 banks file was profiled: 0.90 MB compressed, 6.12 MB expanded and
   49,364 balance rows.
 - Bank files for January through March 2026 were reachable on 11 August 2026.
-- The initial analytical period is January 2021 through the latest published month.
-- The 2025 COSIF redesign is treated as a first-class comparability boundary.
+- The MVP analytical period is January 2025 through the latest published month.
+- The MVP uses banks only and the current COSIF standard; earlier history and
+  consolidated scopes are explicitly deferred.
 
 Start with the [implementation plan](plan/README.md).
+
+Public-facing framing: **Where do Brazil's largest banks get their money, where do
+they put it, and how has that changed under high interest rates?**
 
 ## Repository boundary
 
@@ -48,4 +52,3 @@ BCB and ODbL attribution. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 ## License
 
 Project code and original documentation: [MIT](LICENSE).
-

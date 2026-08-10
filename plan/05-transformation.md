@@ -41,7 +41,8 @@ frequency.
 
 1. Preserve raw source values and add typed values; never replace the original text.
 2. Use append-preserving raw tables. Canonical selection happens in dbt.
-3. Treat file checksum and source-generated date as source version evidence.
+3. Treat file checksum and source-generated date as source evidence; the MVP selects
+   the latest complete version without publishing restatement analytics.
 4. Set schema contracts after the profiling spike; unexpected columns initially
    alert, and destructive schema changes fail.
 5. Publish dlt load-package identifiers into audit models.
@@ -77,11 +78,10 @@ dbt/
 
 ### Core
 
-- Select active file versions deterministically.
-- Detect and publish restatements.
-- Build effective-dated institution and account versions.
+- Select the latest complete source file deterministically.
+- Build current-standard institution and account objects.
 - Apply only reviewed account-to-reporting-line mappings.
-- Retain a reason for every non-comparable cross-taxonomy item.
+- Keep pre-2025 records outside the MVP core rather than creating provisional mappings.
 
 ### Marts
 
@@ -103,7 +103,7 @@ verify_macro_registry -> macro_dlt_assets ------┘                         │
 
 - Use `dagster-dlt` so dlt resources appear as assets.
 - Use `dagster-dbt` so dbt models and tests appear in the same lineage graph.
-- Partition COSIF acquisition by source period and segment.
+- Partition COSIF acquisition by source period.
 - Partition macro acquisition by series and date window where practical.
 - Add freshness checks based on each source's publication calendar, not a universal
   daily expectation.
@@ -118,29 +118,28 @@ verify_macro_registry -> macro_dlt_assets ------┘                         │
 | ZIP integrity, checksum and exact-once completed manifest | dlt |
 | Source header and locale parsing | pytest/dlt |
 | Unique canonical accounting grain | dbt core |
-| One active source version per period and segment | dbt audit |
+| One active source version per period | dbt audit |
 | Source balance to canonical balance reconciliation | dbt audit |
 | Account-detail to reporting-line reconciliation | dbt audit |
-| No cross-scope double count | dbt marts |
-| Mapping coverage and non-comparable status completeness | dbt marts |
+| Top-15 membership is stable across report months | dbt marts |
+| Mapping coverage and unmapped balance completeness | dbt marts |
 | Macro series metadata and native frequency | dlt/dbt |
 
 ## Definition of done for the data layer
 
 1. A clean PostgreSQL database can acquire fixtures, land them and build all marts.
-2. A bounded official sample covers at least 24 consecutive reporting months and both
-   sides of the 2025 taxonomy boundary.
+2. A bounded official sample covers every available bank reporting month from January
+   2025 onward.
 3. dlt and dbt tests pass; at least one seeded defect is shown failing and then fixed.
 4. Dagster materialises the complete fixture asset graph successfully.
-5. Reconciliation, mapping coverage, source freshness and restatement evidence are
+5. Reconciliation, mapping coverage, source freshness and active-file evidence are
    exported.
 6. dbt docs and the frozen `contracts/mart-schema.yml` are generated.
 
 ## What the data layer must not do
 
 - Hide unmapped accounts.
-- Combine incompatible reporting scopes.
+- Add consolidated reporting scopes to the MVP.
 - Compute naive profitability from result accounts that reset during the year.
 - Convert correlation into causal classification.
-- Modify or delete prior raw file versions.
-
+- Claim pre-2025 comparability without a later governed mapping phase.

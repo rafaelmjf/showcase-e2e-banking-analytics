@@ -36,7 +36,7 @@ reconciliation artifact and BI contract as an asset.
 | `raw_cosif` | Append-preserved COSIF file rows plus dlt metadata |
 | `raw_macro` | Native-frequency SGS observations and series metadata |
 | `stg` | Typed, renamed, source-faithful models |
-| `core` | Canonical institution, document, taxonomy and observation logic |
+| `core` | Canonical current-standard institution, document, account and observation logic |
 | `marts` | BI-facing dimensions, facts and monthly context |
 | `audit` | File manifests, reconciliation results and data-quality outcomes |
 
@@ -64,25 +64,25 @@ Cost: no SQLMesh virtual environments or plan/apply demonstration.
 ### No Data Vault
 
 The dominant grain is an official periodic statement identified by institution,
-document, account and reporting date. Revision-preserving landing plus an
-effective-dated canonical layer is sufficient. A vault would add objects without
-solving a real multi-source identity problem.
+document, account and reporting date. Checksum-aware landing plus a current-standard
+canonical core is sufficient for the MVP. A vault would add objects without solving a
+real multi-source identity problem.
 
 Cost: source-history logic must be explicit in manifests and canonical-selection
 models rather than inherited from vault patterns.
 
-### Preserve revisions
+### Preserve source evidence without MVP restatement analytics
 
 Every file version is identified by source URL, checksum, generation date and
-retrieval timestamp. A later file for the same period is appended, never silently
-substituted. Canonical models select the active version while audit marts expose the
-history.
+retrieval timestamp. Canonical models select the latest complete version. The MVP
+exposes file lineage and active-version status but does not build a restatement fact,
+bi-temporal mart or public restatement analysis.
 
-### Native macro frequency plus monthly alignment
+### Native macro evidence plus a small monthly context
 
-Daily, monthly and quarterly observations remain at their source grain. A separate
-monthly context mart applies named rules such as month-end, monthly average or
-period-value carry-forward. No frequency is silently changed.
+Source observations retain their published dates for lineage. The MVP exposes only a
+small monthly context mart. Any non-monthly source must have one named alignment rule,
+such as monthly average or month-end; no frequency is silently changed.
 
 ## Deliberately excluded from release one
 
@@ -93,4 +93,6 @@ period-value carry-forward. No frequency is silently changed.
 - Hosted Dagster
 - Machine learning or causal inference
 - DirectQuery
-
+- Prudential-conglomerate comparison
+- Pre-2025 COSIF history and taxonomy bridging
+- Restatement analytics
