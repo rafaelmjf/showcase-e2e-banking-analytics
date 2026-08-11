@@ -357,3 +357,161 @@ def write_macro_profile(records: Iterable[MacroProfile], output_path: Path) -> i
         writer.writeheader()
         writer.writerows(record.as_dict() for record in materialized)
     return len(materialized)
+
+
+def read_macro_observations(path: Path) -> list[MacroObservation]:
+    """Read typed native observations produced by the bounded profiler."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    return [
+        MacroObservation(
+            series_code=row["series_code"],
+            source_observation_date=row["source_observation_date"],
+            report_month=row["report_month"],
+            value=row["value"],
+            retrieved_at_utc=row["retrieved_at_utc"],
+            source_url=row["source_url"],
+        )
+        for row in rows
+    ]
+
+
+def read_macro_profiles(path: Path) -> list[MacroProfile]:
+    """Read typed SGS completeness evidence produced by the bounded profiler."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    return [
+        MacroProfile(
+            series_code=row["series_code"],
+            status=row["status"],
+            requested_start_month=row["requested_start_month"],
+            requested_end_month=row["requested_end_month"],
+            row_count=int(row["row_count"]),
+            first_observation_date=row["first_observation_date"] or None,
+            last_observation_date=row["last_observation_date"] or None,
+            first_report_month=row["first_report_month"] or None,
+            last_report_month=row["last_report_month"] or None,
+            internal_missing_month_count=int(row["internal_missing_month_count"]),
+            internal_missing_months=row["internal_missing_months"],
+            duplicate_observation_date_count=int(row["duplicate_observation_date_count"]),
+            duplicate_report_month_count=int(row["duplicate_report_month_count"]),
+            lag_months_to_requested_end=(
+                int(row["lag_months_to_requested_end"])
+                if row["lag_months_to_requested_end"]
+                else None
+            ),
+            max_expected_lag_months=int(row["max_expected_lag_months"]),
+            error=row["error"] or None,
+        )
+        for row in rows
+    ]
+
+
+def macro_metadata_records(registry: Iterable[MacroSeries]) -> list[dict[str, object]]:
+    """Convert the accepted registry to the strict raw metadata contract."""
+    return [
+        {
+            "series_code": row.series_code,
+            "theme": row.theme,
+            "display_name": row.display_name,
+            "official_title": row.official_title,
+            "unit": row.unit,
+            "frequency": row.frequency,
+            "source_start_date": row.source_start_date,
+            "observation_semantics": row.observation_semantics,
+            "monthly_alignment": row.monthly_alignment,
+            "derived_metric": row.derived_metric,
+            "max_expected_lag_months": row.max_expected_lag_months,
+            "revision_policy": row.revision_policy,
+            "source_url": row.source_url,
+            "metadata_url": row.metadata_url,
+        }
+        for row in registry
+    ]
+
+
+def build_macro_landing_records(
+    registry: Iterable[MacroSeries],
+    observations: Iterable[MacroObservation],
+    profiles: Iterable[MacroProfile],
+    requested_start_date: date,
+    requested_end_date: date,
+) -> tuple[list[dict[str, object]], list[dict[str, object]], list[dict[str, object]]]:
+    """Convert verified SGS evidence into the three strict raw dlt contracts."""
+    if requested_start_date > requested_end_date:
+        raise ValueError("requested_start_date must not be after requested_end_date")
+    registry_list = list(registry)
+    observation_list = list(observations)
+    profile_list = list(profiles)
+    codes = {row.series_code for row in registry_list}
+    if codes != EXPECTED_SERIES_CODES or len(registry_list) != len(EXPECTED_SERIES_CODES):
+        raise ValueError("Official macro landing requires the exact five-series registry")
+    if len({row.series_code for row in profile_list}) != len(profile_list):
+        raise ValueError("Macro profiles contain duplicate series codes")
+    profile_by_code = {row.series_code: row for row in profile_list}
+    if set(profile_by_code) != codes:
+        raise ValueError("Each macro series must have exactly one profile")
+
+    observations_by_code: dict[str, list[MacroObservation]] = {
+        code: [] for code in codes
+    }
+    seen: set[tuple[str, str]] = set()
+    landing_observations: list[dict[str, object]] = []
+    for row in observation_list:
+        if row.series_code not in codes:
+            raise ValueError(f"Unexpected macro series {row.series_code}")
+        identity = (row.series_code, row.source_observation_date)
+        if identity in seen:
+            raise ValueError(f"Duplicate macro observation {identity}")
+        seen.add(identity)
+        observed = date.fromisoformat(row.source_observation_date)
+        expected_month = f"{observed.year:04d}{observed.month:02d}"
+        if row.report_month != expected_month:
+            raise ValueError(f"Macro observation {identity} has an invalid report month")
+        value = Decimal(row.value)
+        if not value.is_finite():
+            raise ValueError(f"Macro observation {identity} has a non-finite value")
+        retrieved_at = datetime.fromisoformat(row.retrieved_at_utc)
+        observations_by_code[row.series_code].append(row)
+        landing_observations.append(
+            {
+                "series_code": row.series_code,
+                "source_observation_date": observed,
+                "report_month": row.report_month,
+                "value_raw": row.value,
+                "value": value,
+                "retrieved_at_utc": retrieved_at,
+                "source_url": row.source_url,
+                "fixture": False,
+            }
+        )
+
+    expected_start_month = f"{requested_start_date.year:04d}{requested_start_date.month:02d}"
+    expected_end_month = f"{requested_end_date.year:04d}{requested_end_date.month:02d}"
+    fetches: list[dict[str, object]] = []
+    for code in sorted(codes, key=int):
+        profile = profile_by_code[code]
+        series_observations = observations_by_code[code]
+        if profile.status != "complete" or profile.error:
+            raise ValueError(f"Macro series {code} has not passed its profile")
+        if profile.requested_start_month != expected_start_month:
+            raise ValueError(f"Macro series {code} has a different requested start month")
+        if profile.requested_end_month != expected_end_month:
+            raise ValueError(f"Macro series {code} has a different requested end month")
+        if profile.row_count != len(series_observations) or not series_observations:
+            raise ValueError(f"Macro series {code} profile row count does not reconcile")
+        retrieved_values = {row.retrieved_at_utc for row in series_observations}
+        if len(retrieved_values) != 1:
+            raise ValueError(f"Macro series {code} has multiple retrieval timestamps")
+        fetches.append(
+            {
+                "series_code": code,
+                "requested_start_date": requested_start_date,
+                "requested_end_date": requested_end_date,
+                "retrieved_at_utc": datetime.fromisoformat(next(iter(retrieved_values))),
+                "status": "complete",
+                "response_count": profile.row_count,
+                "fixture": False,
+            }
+        )
+    return macro_metadata_records(registry_list), landing_observations, fetches

@@ -21,16 +21,21 @@ from banking_analytics.pipelines.fixtures import (
     verify_fixture_landing,
     write_fixture_controls,
 )
+from banking_analytics.pipelines.official import run_official_pipelines
 from banking_analytics.settings import WarehouseSettings
 from banking_analytics.sources.cosif import (
     download_catalog_files,
     profile_downloads,
     read_complete_downloads,
+    read_download_manifest,
+    read_source_profiles,
     write_download_manifest,
     write_source_profile,
 )
 from banking_analytics.sources.sgs import (
     profile_macro_series,
+    read_macro_observations,
+    read_macro_profiles,
     read_macro_registry,
     write_macro_observations,
     write_macro_profile,
@@ -265,6 +270,40 @@ def verify_fixtures(
     typer.echo(f"Wrote {written} controls to {output}; failures={len(failures)}.")
     if failures:
         raise typer.Exit(code=1)
+
+
+@app.command("load-official")
+def load_official(
+    cosif_manifest: Annotated[Path, typer.Option("--cosif-manifest")],
+    cosif_profile: Annotated[Path, typer.Option("--cosif-profile")],
+    macro_observations: Annotated[Path, typer.Option("--macro-observations")],
+    macro_profile: Annotated[Path, typer.Option("--macro-profile")],
+    macro_start_date: Annotated[str, typer.Option("--macro-start")],
+    macro_end_date: Annotated[str, typer.Option("--macro-end")],
+    macro_registry: Annotated[Path, typer.Option("--macro-registry")] = Path(
+        "config/macro_series_registry.csv"
+    ),
+    project_root: Annotated[Path, typer.Option("--project-root")] = Path("."),
+) -> None:
+    """Land only acquisition outputs that passed every official-source profile."""
+    try:
+        start_date = date.fromisoformat(macro_start_date)
+        end_date = date.fromisoformat(macro_end_date)
+        cosif_info, macro_info = run_official_pipelines(
+            project_root.resolve(),
+            read_download_manifest(cosif_manifest),
+            read_source_profiles(cosif_profile),
+            read_macro_registry(macro_registry),
+            read_macro_observations(macro_observations),
+            read_macro_profiles(macro_profile),
+            start_date,
+            end_date,
+        )
+    except Exception as exc:
+        typer.echo(f"Official load failed: {type(exc).__name__}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"COSIF load: {cosif_info}")
+    typer.echo(f"Macro load: {macro_info}")
 
 
 if __name__ == "__main__":

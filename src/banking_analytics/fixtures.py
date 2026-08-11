@@ -5,19 +5,11 @@ from __future__ import annotations
 import csv
 from collections.abc import Iterable
 from datetime import date, datetime
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from pathlib import Path
 
-from banking_analytics.sources.sgs import read_macro_registry
-
-
-def parse_brl_decimal(value: str) -> Decimal:
-    """Parse source-style Brazilian decimals without accepting ambiguous thousands."""
-    normalized = value.strip().replace(".", "").replace(",", ".")
-    try:
-        return Decimal(normalized)
-    except InvalidOperation as exc:
-        raise ValueError(f"Invalid Brazilian decimal: {value!r}") from exc
+from banking_analytics.parsing import parse_brl_decimal
+from banking_analytics.sources.sgs import macro_metadata_records, read_macro_registry
 
 
 def read_cosif_fixture(path: Path) -> list[dict[str, object]]:
@@ -98,22 +90,4 @@ def read_macro_fixture(path: Path) -> list[dict[str, object]]:
 
 def build_macro_metadata_fixture(registry_path: Path) -> list[dict[str, object]]:
     """Convert the accepted registry to dlt-ready metadata rows."""
-    return [
-        {
-            "series_code": row.series_code,
-            "theme": row.theme,
-            "display_name": row.display_name,
-            "official_title": row.official_title,
-            "unit": row.unit,
-            "frequency": row.frequency,
-            "source_start_date": row.source_start_date,
-            "observation_semantics": row.observation_semantics,
-            "monthly_alignment": row.monthly_alignment,
-            "derived_metric": row.derived_metric,
-            "max_expected_lag_months": row.max_expected_lag_months,
-            "revision_policy": row.revision_policy,
-            "source_url": row.source_url,
-            "metadata_url": row.metadata_url,
-        }
-        for row in read_macro_registry(registry_path)
-    ]
+    return macro_metadata_records(read_macro_registry(registry_path))

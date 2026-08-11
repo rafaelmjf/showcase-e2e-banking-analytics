@@ -4,15 +4,12 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "src/banking_analytics/fixtures.py"
-      - "src/banking_analytics/pipelines/**"
+      - "src/banking_analytics/**"
       - "fixtures/**"
       - "config/macro_series_registry.csv"
       - "dbt/**"
       - "orchestration/**"
-      - "src/banking_analytics/orchestration/**"
-      - "tests/test_fixture_pipelines.py"
-      - "tests/test_orchestration.py"
+      - "tests/**"
       - ".github/workflows/fixture-landing.yml"
 
 permissions:

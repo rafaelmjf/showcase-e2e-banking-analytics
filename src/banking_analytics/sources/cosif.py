@@ -9,14 +9,16 @@ import os
 import re
 import time
 import zipfile
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import httpx
 
 from banking_analytics.bcb.cosif import DEFAULT_USER_AGENT, iter_periods
+from banking_analytics.parsing import parse_brl_decimal
 
 REQUIRED_COLUMNS = {
     "DATA_BASE",
@@ -226,12 +228,17 @@ def write_download_manifest(records: Iterable[DownloadRecord], output_path: Path
 
 def read_complete_downloads(manifest_path: Path) -> list[DownloadRecord]:
     """Read complete records from a download manifest."""
+    return [
+        record for record in read_download_manifest(manifest_path) if record.status == "complete"
+    ]
+
+
+def read_download_manifest(manifest_path: Path) -> list[DownloadRecord]:
+    """Read every typed acquisition outcome without hiding failed periods."""
     with manifest_path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
     records: list[DownloadRecord] = []
     for row in rows:
-        if row["status"] != "complete":
-            continue
         records.append(
             DownloadRecord(
                 period=row["period"],
@@ -384,3 +391,171 @@ def write_source_profile(records: Iterable[ProfileRecord], output_path: Path) ->
         writer.writeheader()
         writer.writerows(record.as_dict() for record in materialized)
     return len(materialized)
+
+
+def read_source_profiles(path: Path) -> list[ProfileRecord]:
+    """Read typed COSIF profile evidence produced by this package."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    profiles: list[ProfileRecord] = []
+    for row in rows:
+        profiles.append(
+            ProfileRecord(
+                period=row["period"],
+                source_url=row["source_url"],
+                sha256=row["sha256"],
+                compressed_bytes=int(row["compressed_bytes"]),
+                member_name=row["member_name"],
+                uncompressed_bytes=int(row["uncompressed_bytes"]),
+                encoding=row["encoding"],
+                delimiter=row["delimiter"],
+                header_line_number=int(row["header_line_number"]),
+                metadata_line_count=int(row["metadata_line_count"]),
+                columns=row["columns"],
+                row_count=int(row["row_count"]),
+                malformed_row_count=int(row["malformed_row_count"]),
+                document_count=int(row["document_count"]),
+                institution_count=int(row["institution_count"]),
+                account_count=int(row["account_count"]),
+                declared_period_count=int(row["declared_period_count"]),
+                declared_periods=row["declared_periods"],
+                period_matches=_parse_csv_bool(row["period_matches"]),
+                source_generated_at=row["source_generated_at"] or None,
+            )
+        )
+    return profiles
+
+
+def build_cosif_landing_records(
+    downloads: Iterable[DownloadRecord],
+    profiles: Iterable[ProfileRecord],
+) -> tuple[list[dict[str, object]], Iterator[dict[str, object]]]:
+    """Convert verified official archives to the strict raw dlt contracts."""
+    download_list = list(downloads)
+    profile_by_checksum = {profile.sha256: profile for profile in profiles}
+    if len(profile_by_checksum) != len(download_list):
+        raise ValueError("Each COSIF download must have exactly one profile")
+
+    manifests: list[dict[str, object]] = []
+    pairs: list[tuple[DownloadRecord, ProfileRecord]] = []
+    for record in download_list:
+        if record.status != "complete" or not record.sha256 or not record.archive_path:
+            raise ValueError(f"COSIF period {record.period} is not a complete download")
+        profile = profile_by_checksum.get(record.sha256)
+        if profile is None:
+            raise ValueError(f"COSIF period {record.period} has no matching profile")
+        _validate_landing_pair(record, profile)
+        generated_at = date.fromisoformat(profile.source_generated_at or "")
+        retrieved_at = datetime.fromisoformat(record.retrieved_at_utc)
+        manifests.append(
+            {
+                "source_period": record.period,
+                "source_url": record.source_url,
+                "source_checksum": record.sha256,
+                "source_generated_at": generated_at,
+                "retrieved_at_utc": retrieved_at,
+                "status": "complete",
+                "is_active": True,
+                "row_count": profile.row_count,
+                "fixture": False,
+            }
+        )
+        pairs.append((record, profile))
+
+    def rows() -> Iterator[dict[str, object]]:
+        for record, profile in pairs:
+            yield from _iter_landing_rows(record, profile)
+
+    return manifests, rows()
+
+
+def _validate_landing_pair(record: DownloadRecord, profile: ProfileRecord) -> None:
+    if profile.period != record.period or profile.source_url != record.source_url:
+        raise ValueError(f"COSIF profile identity mismatch for period {record.period}")
+    if profile.malformed_row_count:
+        raise ValueError(f"COSIF period {record.period} contains malformed rows")
+    if not profile.period_matches or profile.declared_periods != record.period:
+        raise ValueError(f"COSIF period {record.period} has inconsistent DATA_BASE values")
+    if profile.row_count < 1:
+        raise ValueError(f"COSIF period {record.period} contains no rows")
+    if not profile.source_generated_at:
+        raise ValueError(f"COSIF period {record.period} has no source generation date")
+    if not REQUIRED_COLUMNS.issubset(set(profile.columns.split("|"))):
+        raise ValueError(f"COSIF period {record.period} profile lacks required columns")
+
+
+def _iter_landing_rows(
+    record: DownloadRecord, profile: ProfileRecord
+) -> Iterator[dict[str, object]]:
+    archive_path = Path(record.archive_path or "")
+    if _sha256_file(archive_path) != record.sha256:
+        raise ValueError(f"Checksum mismatch for period {record.period}")
+    with (
+        zipfile.ZipFile(archive_path) as archive,
+        archive.open(profile.member_name) as binary_handle,
+    ):
+        text_handle = io.TextIOWrapper(binary_handle, encoding=profile.encoding, newline="")
+        reader = iter(text_handle)
+        header: list[str] | None = None
+        for line in reader:
+            candidate = line.strip().removeprefix("#")
+            columns = [column.strip() for column in candidate.split(profile.delimiter)]
+            if REQUIRED_COLUMNS.issubset(set(columns)):
+                header = columns
+                break
+        if header is None or "|".join(header) != profile.columns:
+            raise ValueError(f"COSIF header changed after profiling for {record.period}")
+        generated_at = date.fromisoformat(profile.source_generated_at or "")
+        retrieved_at = datetime.fromisoformat(record.retrieved_at_utc)
+        row_count = 0
+        for file_row_number, values in enumerate(
+            csv.reader(reader, delimiter=profile.delimiter), start=1
+        ):
+            if not values or not any(value.strip() for value in values):
+                continue
+            row_count += 1
+            if len(values) != len(header):
+                raise ValueError(
+                    f"COSIF period {record.period} row {file_row_number} changed shape"
+                )
+            row = dict(zip(header, values, strict=True))
+            if row["DATA_BASE"].strip() != record.period:
+                raise ValueError(
+                    f"COSIF period {record.period} row {file_row_number} has DATA_BASE "
+                    f"{row['DATA_BASE']!r}"
+                )
+            saldo_raw = row["SALDO"].strip()
+            saldo: Decimal = parse_brl_decimal(saldo_raw)
+            yield {
+                "source_period": record.period,
+                "documento": row["DOCUMENTO"].strip(),
+                "cnpj": row["CNPJ"].strip(),
+                "agencia": row.get("AGENCIA", "").strip() or None,
+                "nome_instituicao": row["NOME_INSTITUICAO"].strip(),
+                "cod_congl": row.get("COD_CONGL", "").strip() or None,
+                "nome_congl": row.get("NOME_CONGL", "").strip() or None,
+                "taxonomia": row.get("TAXONOMIA", "").strip() or None,
+                "conta": row["CONTA"].strip(),
+                "nome_conta": row["NOME_CONTA"].strip(),
+                "saldo_raw": saldo_raw,
+                "saldo": saldo,
+                "source_url": record.source_url,
+                "source_checksum": record.sha256,
+                "source_generated_at": generated_at,
+                "retrieved_at_utc": retrieved_at,
+                "file_row_number": file_row_number,
+            }
+        if row_count != profile.row_count:
+            raise ValueError(
+                f"COSIF period {record.period} profile rows={profile.row_count}, "
+                f"landing rows={row_count}"
+            )
+
+
+def _parse_csv_bool(value: str) -> bool:
+    normalized = value.strip().lower()
+    if normalized in {"true", "1", "yes"}:
+        return True
+    if normalized in {"false", "0", "no"}:
+        return False
+    raise ValueError(f"Invalid CSV boolean: {value!r}")
