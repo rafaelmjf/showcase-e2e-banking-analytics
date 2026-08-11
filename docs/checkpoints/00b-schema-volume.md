@@ -41,6 +41,12 @@ A bounded download of the catalog-selected 202603 file was attempted at
 and no retained partial file. The failure is correctly isolated and recoverable, but
 there is not yet an official archive body to certify.
 
+[GitHub Actions run 31444663707](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31444663707)
+then exercised a normal full GET rather than `HEAD` or a range request. The Ubuntu
+runner passed Ruff and all 26 tests, retried the catalog-selected 202603 URL three
+times, and produced the same HTTP 502 manifest state. No archive or profile was
+fabricated, and the generated manifest was retained as a run artifact.
+
 Status: **in progress; live download blocked by the BCB file endpoint**.
 
 ## Development-only mirror cross-check
@@ -65,6 +71,19 @@ This corroborates the expected March scale and current account-code width. It do
 not certify the official ZIP checksum, raw encoding, metadata lines, row completeness
 or source-generation date. The mirror file remains under ignored `data/work/` and is
 not committed.
+
+The mirror also provides a provisional accounting-identity check for later 0C work:
+
+- class 1 `1000000009` is Ativo Realizável;
+- class 2 `2000000008` is Ativo Permanente;
+- class 3 `3000000007` is Compensação Ativa;
+- `3999999009` is Total Geral do Ativo and includes class-3 control balances;
+- for 113 institutions containing all four rows, `(class 1 + class 2)` reconciled to
+  `(Total Geral do Ativo - Compensação Ativa)` within R$0.10;
+- all provisional top-15 institutions had both class-1 and class-2 rows.
+
+This prevents the misleading use of `3999999009` as ordinary total assets. The
+identity and ranking remain provisional until the official archives pass 0B.
 
 ## Resume commands
 

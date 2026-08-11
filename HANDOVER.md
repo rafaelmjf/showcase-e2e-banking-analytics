@@ -46,6 +46,10 @@ the source header, and produce the required per-period counts. Ruff and all 26 t
 pass. A bounded live 202603 download failed cleanly with HTTP 502 and retained no
 partial file. See `docs/checkpoints/00b-schema-volume.md`.
 
+GitHub Actions [run 31444663707](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31444663707)
+also attempted a normal full GET three times and received HTTP 502, ruling out a
+`HEAD`/range-only issue. The 0B code path and failure artifact are verified.
+
 A development-only current mirror was also profiled to stress-check expected scale:
 202603 has 50,273 rows, 170 CNPJ/name pairs, 1,011 accounts and only document 4010.
 It is explicitly non-authoritative, ignored under `data/work/`, and does not satisfy
