@@ -61,6 +61,10 @@ certified live landing, reporting marts or BI model has been completed yet.
   blocks every downstream step unless all evidence is complete. Its verified HTTP
   502 failure path is documented in
   [the sample-gate checkpoint](docs/checkpoints/06-official-sample-gate.md).
+- The same run now emits nine machine-readable live-readiness controls and remains
+  blocked until all source completeness conditions pass. The contract and current
+  result are documented in
+  [the readiness checkpoint](docs/checkpoints/07-live-readiness.md).
 
 Start with the [implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).

@@ -14,6 +14,7 @@ against isolated mocked source bodies, but remain unexecuted on live observation
 Dagster can now select fixture or official evidence without changing its 16 asset
 keys; official mode fails definition construction when any evidence input is absent.
 A manual bounded official-sample workflow now hard-gates the complete live route.
+Its machine-readable nine-control readiness assessment currently reports blocked.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -122,13 +123,20 @@ designed; PostgreSQL, official dbt and official Dagster steps were skipped, whil
 artifact `9085384703` retained both source outcomes. See
 `docs/checkpoints/06-official-sample-gate.md`.
 
+The live-readiness checkpoint is complete. Standard CI
+[run 31448608102](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31448608102)
+passed 49 tests and the full fixture regression. Bounded official
+[run 31448688497](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31448688497)
+then wrote nine controls: period/series/window coverage passed, five completeness
+controls failed, and the overall state was `blocked`. Artifact `9085517313` retains
+the full CSV; no official load ran. See `docs/checkpoints/07-live-readiness.md`.
+
 ## Next action
 
-Add a machine-readable implementation-readiness assessment that combines the COSIF
-download/profile and SGS profile evidence into explicit blocked/ready controls. It
-must remain blocked on the current artifacts and become ready only when every source
-gate reconciles. Retry one bounded 0B download first at each source checkpoint; also
-retry the 0D live acquisition command when the BCB services recover:
+Complete the curated dbt catalog for the implemented source, staging and core models,
+then generate and preserve a docs artifact without implying that marts exist. Retry
+one bounded 0B download first at each source checkpoint; also retry the 0D live
+acquisition command when the BCB services recover:
 
 ```powershell
 uv run --locked banking-data download-cosif --start 202603 --end 202603 `

@@ -50,3 +50,8 @@ It does not claim that the full official dbt graph ran on live observations.
 [GitHub Actions run 31448296850](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31448296850).
 Both live source families returned HTTP 502, all downstream official steps were
 skipped, and the error evidence was preserved as artifact `9085384703`.
+
+`live_readiness_checkpoint_summary.csv` links the green regression run and the
+blocked live run that first produced the nine-control readiness contract. The full
+`live_readiness.csv` is retained in GitHub artifact `9085517313`; the committed row
+records its 3 passing source controls, 5 failing source controls and blocked result.
