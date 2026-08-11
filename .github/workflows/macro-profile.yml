@@ -1,0 +1,68 @@
+name: Macro profile
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: First observation date (YYYY-MM-DD)
+        required: true
+        default: "2025-01-01"
+      end_date:
+        description: Last observation date (YYYY-MM-DD)
+        required: true
+        default: "2026-07-31"
+
+permissions:
+  contents: read
+
+jobs:
+  profile:
+    name: Validate registry and profile five official SGS series
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: "0.11.19"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install Python and locked project
+        run: |
+          uv python install 3.12
+          uv sync --locked --extra dev
+
+      - name: Verify implementation
+        run: |
+          uv run --locked ruff check src tests
+          uv run --locked pytest
+
+      - name: Profile official SGS series
+        id: profile
+        continue-on-error: true
+        run: >-
+          uv run --locked banking-data profile-sgs
+          --registry config/macro_series_registry.csv
+          --start "${{ inputs.start_date }}"
+          --end "${{ inputs.end_date }}"
+          --observations artifacts/generated/macro_observations.csv
+          --profile artifacts/generated/macro_profile.csv
+          --attempts 3
+
+      - name: Preserve generated evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: macro-profile-${{ inputs.start_date }}-${{ inputs.end_date }}
+          path: artifacts/generated/macro_*.csv
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce macro exit gate
+        if: always()
+        run: test "${{ steps.profile.outcome }}" = "success"

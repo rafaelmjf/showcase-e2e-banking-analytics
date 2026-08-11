@@ -1,6 +1,7 @@
 """Command-line entry point for the banking analytics project."""
 
 import zipfile
+from datetime import date
 from pathlib import Path
 from typing import Annotated
 
@@ -20,6 +21,12 @@ from banking_analytics.sources.cosif import (
     read_complete_downloads,
     write_download_manifest,
     write_source_profile,
+)
+from banking_analytics.sources.sgs import (
+    profile_macro_series,
+    read_macro_registry,
+    write_macro_observations,
+    write_macro_profile,
 )
 
 app = typer.Typer(help="Brazilian banking analytics data tools.")
@@ -171,6 +178,51 @@ def profile_cosif(
         f"rows={rows}, malformed_rows={malformed}."
     )
     if malformed or not all(record.period_matches for record in records):
+        raise typer.Exit(code=1)
+
+
+@app.command("profile-sgs")
+def profile_sgs(
+    registry: Annotated[Path, typer.Option("--registry")] = Path(
+        "config/macro_series_registry.csv"
+    ),
+    start_date: Annotated[str, typer.Option("--start", help="First YYYY-MM-DD date.")] = (
+        "2025-01-01"
+    ),
+    end_date: Annotated[str, typer.Option("--end", help="Last YYYY-MM-DD date.")] = ...,
+    observations_output: Annotated[Path, typer.Option("--observations")] = Path(
+        "artifacts/generated/macro_observations.csv"
+    ),
+    profile_output: Annotated[Path, typer.Option("--profile")] = Path(
+        "artifacts/generated/macro_profile.csv"
+    ),
+    timeout_seconds: Annotated[float, typer.Option("--timeout", min=1.0)] = 30.0,
+    max_attempts: Annotated[int, typer.Option("--attempts", min=1)] = 3,
+) -> None:
+    """Fetch and validate the five bounded official SGS macro series."""
+    try:
+        parsed_start = date.fromisoformat(start_date)
+        parsed_end = date.fromisoformat(end_date)
+        series = read_macro_registry(registry)
+        observations, profiles = profile_macro_series(
+            series,
+            parsed_start,
+            parsed_end,
+            timeout_seconds=timeout_seconds,
+            max_attempts=max_attempts,
+        )
+    except (OSError, ValueError) as exc:
+        typer.echo(f"SGS profile setup failed: {type(exc).__name__}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+
+    observation_count = write_macro_observations(observations, observations_output)
+    profile_count = write_macro_profile(profiles, profile_output)
+    failures = [profile for profile in profiles if profile.status != "complete"]
+    typer.echo(
+        f"Wrote {observation_count} observations and {profile_count} profiles; "
+        f"complete={profile_count - len(failures)}, failures={len(failures)}."
+    )
+    if failures:
         raise typer.Exit(code=1)
 
 
