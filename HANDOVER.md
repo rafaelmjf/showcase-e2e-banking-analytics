@@ -46,6 +46,11 @@ the source header, and produce the required per-period counts. Ruff and all 26 t
 pass. A bounded live 202603 download failed cleanly with HTTP 502 and retained no
 partial file. See `docs/checkpoints/00b-schema-volume.md`.
 
+A development-only current mirror was also profiled to stress-check expected scale:
+202603 has 50,273 rows, 170 CNPJ/name pairs, 1,011 accounts and only document 4010.
+It is explicitly non-authoritative, ignored under `data/work/`, and does not satisfy
+the 0B exit gate.
+
 ## Next action
 
 Resume checkpoint 0B from `plan/08-delivery.md` using the catalog-selected active

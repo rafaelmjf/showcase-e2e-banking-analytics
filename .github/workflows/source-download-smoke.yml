@@ -1,0 +1,74 @@
+name: Source download smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      period:
+        description: Published COSIF bank period (YYYYMM)
+        required: true
+        default: "202603"
+
+permissions:
+  contents: read
+
+jobs:
+  download:
+    name: Download, validate and profile one COSIF archive
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: "0.11.19"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install Python and locked project
+        run: |
+          uv python install 3.12
+          uv sync --locked --extra dev
+
+      - name: Verify implementation
+        run: |
+          uv run --locked ruff check src tests
+          uv run --locked pytest
+
+      - name: Download official archive
+        id: download
+        continue-on-error: true
+        run: >-
+          uv run --locked banking-data download-cosif
+          --start "${{ inputs.period }}"
+          --end "${{ inputs.period }}"
+          --catalog artifacts/source_catalog.csv
+          --download-dir data/downloads/cosif
+          --manifest artifacts/generated/cosif_download_manifest.csv
+          --attempts 3
+
+      - name: Profile official archive
+        id: profile
+        continue-on-error: true
+        run: >-
+          uv run --locked banking-data profile-cosif
+          --manifest artifacts/generated/cosif_download_manifest.csv
+          --output artifacts/generated/cosif_source_profile.csv
+
+      - name: Preserve generated evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: cosif-download-smoke-${{ inputs.period }}
+          path: artifacts/generated/*.csv
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce smoke exit gate
+        if: always()
+        run: |
+          test "${{ steps.download.outcome }}" = "success"
+          test "${{ steps.profile.outcome }}" = "success"

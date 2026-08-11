@@ -43,6 +43,29 @@ there is not yet an official archive body to certify.
 
 Status: **in progress; live download blocked by the BCB file endpoint**.
 
+## Development-only mirror cross-check
+
+To exercise the expected current data shape without misrepresenting it as official
+evidence, commit `190cb06963bf3b59fa3b7ec281ed3aebf2ac64b2` from
+[PulseDataLabs/PulseIFData](https://github.com/PulseDataLabs/PulseIFData) was inspected.
+Its scraper identifies BCB as its source and preserves the current normalized fields,
+but this mirror is not an MVP input and cannot pass the exit gate.
+
+Observed in `data/bacen_balancetes_bancos.csv`:
+
+- mirror SHA-256 `451cde33185b991f709a446d2c887b7e8910cb520505a3547911ce9337a786d7`;
+- 6,982,690 bytes and 50,273 rows;
+- one source period, 202603, captured on 2026-08-10;
+- document 4010 only;
+- 170 distinct CNPJ/name pairs, 1,011 account codes and 10-digit account codes on
+  every row;
+- expected normalized accounting fields plus the mirror's `data_captura` field.
+
+This corroborates the expected March scale and current account-code width. It does
+not certify the official ZIP checksum, raw encoding, metadata lines, row completeness
+or source-generation date. The mirror file remains under ignored `data/work/` and is
+not committed.
+
 ## Resume commands
 
 ```powershell
