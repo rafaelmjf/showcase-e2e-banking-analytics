@@ -9,7 +9,10 @@ on:
       - "fixtures/**"
       - "config/macro_series_registry.csv"
       - "dbt/**"
+      - "orchestration/**"
+      - "src/banking_analytics/orchestration/**"
       - "tests/test_fixture_pipelines.py"
+      - "tests/test_orchestration.py"
       - ".github/workflows/fixture-landing.yml"
 
 permissions:
@@ -78,6 +81,19 @@ jobs:
           uv run --locked dbt build
           --project-dir dbt
           --profiles-dir dbt
+
+      - name: Validate Dagster definitions
+        run: >-
+          uv run --locked dagster definitions validate
+          -f orchestration/definitions.py
+          -a defs
+
+      - name: Materialize fixture asset graph
+        run: >-
+          uv run --locked dagster job execute
+          -f orchestration/definitions.py
+          -a defs
+          -j fixture_end_to_end
 
       - name: Preserve verification evidence
         uses: actions/upload-artifact@v7.0.1

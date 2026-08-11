@@ -17,6 +17,7 @@ select
     balance.source_generated_at,
     balance.retrieved_at_utc,
     balance.file_row_number,
+    manifest.declared_row_count,
     balance.is_fixture,
     balance.dlt_load_id
 from {{ ref('stg_cosif_balance_row') }} as balance
