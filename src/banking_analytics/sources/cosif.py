@@ -432,8 +432,11 @@ def build_cosif_landing_records(
 ) -> tuple[list[dict[str, object]], Iterator[dict[str, object]]]:
     """Convert verified official archives to the strict raw dlt contracts."""
     download_list = list(downloads)
-    profile_by_checksum = {profile.sha256: profile for profile in profiles}
-    if len(profile_by_checksum) != len(download_list):
+    profile_list = list(profiles)
+    profile_by_checksum = {profile.sha256: profile for profile in profile_list}
+    if len(profile_by_checksum) != len(profile_list):
+        raise ValueError("COSIF profiles contain duplicate checksums")
+    if len(profile_list) != len(download_list):
         raise ValueError("Each COSIF download must have exactly one profile")
 
     manifests: list[dict[str, object]] = []
@@ -472,6 +475,8 @@ def build_cosif_landing_records(
 def _validate_landing_pair(record: DownloadRecord, profile: ProfileRecord) -> None:
     if profile.period != record.period or profile.source_url != record.source_url:
         raise ValueError(f"COSIF profile identity mismatch for period {record.period}")
+    if record.compressed_bytes != profile.compressed_bytes:
+        raise ValueError(f"COSIF compressed-byte evidence mismatch for {record.period}")
     if profile.malformed_row_count:
         raise ValueError(f"COSIF period {record.period} contains malformed rows")
     if not profile.period_matches or profile.declared_periods != record.period:

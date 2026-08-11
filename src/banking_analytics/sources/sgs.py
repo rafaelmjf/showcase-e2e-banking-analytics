@@ -468,7 +468,10 @@ def build_macro_landing_records(
         expected_month = f"{observed.year:04d}{observed.month:02d}"
         if row.report_month != expected_month:
             raise ValueError(f"Macro observation {identity} has an invalid report month")
-        value = Decimal(row.value)
+        try:
+            value = Decimal(row.value)
+        except InvalidOperation as exc:
+            raise ValueError(f"Macro observation {identity} has an invalid value") from exc
         if not value.is_finite():
             raise ValueError(f"Macro observation {identity} has a non-finite value")
         retrieved_at = datetime.fromisoformat(row.retrieved_at_utc)
@@ -500,6 +503,18 @@ def build_macro_landing_records(
             raise ValueError(f"Macro series {code} has a different requested end month")
         if profile.row_count != len(series_observations) or not series_observations:
             raise ValueError(f"Macro series {code} profile row count does not reconcile")
+        observed_dates = sorted(row.source_observation_date for row in series_observations)
+        observed_months = sorted(row.report_month for row in series_observations)
+        if (
+            profile.first_observation_date != observed_dates[0]
+            or profile.last_observation_date != observed_dates[-1]
+            or profile.first_report_month != observed_months[0]
+            or profile.last_report_month != observed_months[-1]
+        ):
+            raise ValueError(f"Macro series {code} profile bounds do not reconcile")
+        registry_series = next(row for row in registry_list if row.series_code == code)
+        if profile.max_expected_lag_months != registry_series.max_expected_lag_months:
+            raise ValueError(f"Macro series {code} freshness contract changed after profiling")
         retrieved_values = {row.retrieved_at_utc for row in series_observations}
         if len(retrieved_values) != 1:
             raise ValueError(f"Macro series {code} has multiple retrieval timestamps")
