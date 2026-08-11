@@ -1,0 +1,48 @@
+version: 2
+
+models:
+  - name: cosif_file_manifest
+    description: Every source file version with one deterministic selected version per period.
+    columns:
+      - {name: source_checksum, data_tests: [not_null, unique]}
+      - {name: source_period, data_tests: [not_null]}
+      - {name: is_selected, data_tests: [not_null]}
+
+  - name: account_balance
+    description: Source-faithful account rows from selected complete file versions only.
+    columns:
+      - {name: source_checksum, data_tests: [not_null]}
+      - {name: file_row_number, data_tests: [not_null]}
+      - {name: institution_cnpj, data_tests: [not_null]}
+      - {name: account_code, data_tests: [not_null]}
+      - {name: balance_amount, data_tests: [not_null]}
+
+  - name: bank_period
+    description: One institution and report month observed in selected account balances.
+    columns:
+      - {name: bank_period_key, data_tests: [not_null, unique]}
+      - {name: report_month, data_tests: [not_null]}
+      - {name: institution_cnpj, data_tests: [not_null]}
+
+  - name: cosif_account
+    description: Latest observed current-standard description for each account code.
+    columns:
+      - {name: account_code, data_tests: [not_null, unique]}
+      - {name: account_name, data_tests: [not_null]}
+
+  - name: macro_series
+    description: Accepted semantic metadata for exactly five MVP context series.
+    columns:
+      - {name: series_code, data_tests: [not_null, unique]}
+      - name: frequency
+        data_tests:
+          - accepted_values:
+              arguments: {values: ["monthly"]}
+
+  - name: macro_observation
+    description: Native macro values with explicit report-month alignment.
+    columns:
+      - {name: series_code, data_tests: [not_null]}
+      - {name: source_observation_date, data_tests: [not_null]}
+      - {name: report_month, data_tests: [not_null]}
+      - {name: value, data_tests: [not_null]}

@@ -1,0 +1,22 @@
+select
+    source_period::varchar(6) as source_period,
+    to_date(source_period, 'YYYYMM')::date as report_month,
+    documento::text as document_code,
+    cnpj::text as institution_cnpj,
+    nullif(trim(agencia), '')::text as agency_code,
+    nome_instituicao::text as institution_name,
+    nullif(trim(cod_congl), '')::text as conglomerate_code,
+    nullif(trim(nome_congl), '')::text as conglomerate_name,
+    nullif(trim(taxonomia), '')::text as taxonomy,
+    conta::text as account_code,
+    nome_conta::text as account_name,
+    saldo_raw::text as balance_raw,
+    saldo::numeric(38, 2) as balance_amount,
+    source_url::text as source_url,
+    source_checksum::text as source_checksum,
+    source_generated_at::date as source_generated_at,
+    retrieved_at_utc::timestamptz as retrieved_at_utc,
+    file_row_number::bigint as file_row_number,
+    (source_url like 'fixture://%')::boolean as is_fixture,
+    _dlt_load_id::text as dlt_load_id
+from {{ source('raw_cosif', 'cosif_balance_row') }}

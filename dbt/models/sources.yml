@@ -1,0 +1,51 @@
+version: 2
+
+sources:
+  - name: raw_cosif
+    schema: raw_cosif
+    description: Source-faithful COSIF rows and file manifests landed by dlt.
+    tables:
+      - name: cosif_file_manifest
+        columns:
+          - name: source_checksum
+            data_tests: [not_null, unique]
+          - name: source_period
+            data_tests: [not_null]
+      - name: cosif_balance_row
+        columns:
+          - name: source_checksum
+            data_tests: [not_null]
+          - name: file_row_number
+            data_tests: [not_null]
+          - name: saldo_raw
+            data_tests: [not_null]
+          - name: saldo
+            data_tests: [not_null]
+
+  - name: raw_macro
+    schema: raw_macro
+    description: Verified SGS metadata, observations and fetch manifests landed by dlt.
+    tables:
+      - name: sgs_series_metadata
+        columns:
+          - name: series_code
+            data_tests: [not_null, unique]
+      - name: sgs_observation
+        columns:
+          - name: series_code
+            data_tests: [not_null]
+          - name: source_observation_date
+            data_tests: [not_null]
+          - name: value_raw
+            data_tests: [not_null]
+          - name: value
+            data_tests: [not_null]
+      - name: sgs_fetch_manifest
+        columns:
+          - name: series_code
+            data_tests: [not_null]
+          - name: status
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: ["complete", "error"]

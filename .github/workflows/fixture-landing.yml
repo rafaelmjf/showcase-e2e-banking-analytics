@@ -8,6 +8,7 @@ on:
       - "src/banking_analytics/pipelines/**"
       - "fixtures/**"
       - "config/macro_series_registry.csv"
+      - "dbt/**"
       - "tests/test_fixture_pipelines.py"
       - ".github/workflows/fixture-landing.yml"
 
@@ -72,10 +73,19 @@ jobs:
           uv run --locked banking-data verify-fixtures
           --output artifacts/generated/fixture_landing_evidence.csv
 
+      - name: Build and test dbt staging and core
+        run: >-
+          uv run --locked dbt build
+          --project-dir dbt
+          --profiles-dir dbt
+
       - name: Preserve verification evidence
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: fixture-landing-evidence
-          path: artifacts/generated/fixture_landing_evidence.csv
+          name: fixture-data-foundation-evidence
+          path: |
+            artifacts/generated/fixture_landing_evidence.csv
+            dbt/target/manifest.json
+            dbt/target/run_results.json
           if-no-files-found: error
           retention-days: 30

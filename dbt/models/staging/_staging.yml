@@ -1,0 +1,85 @@
+version: 2
+
+models:
+  - name: stg_cosif_file_manifest
+    config: {contract: {enforced: true}}
+    columns:
+      - {name: source_period, data_type: varchar(6), data_tests: [not_null]}
+      - {name: report_month, data_type: date, data_tests: [not_null]}
+      - {name: source_url, data_type: text, data_tests: [not_null]}
+      - {name: source_checksum, data_type: text, data_tests: [not_null, unique]}
+      - {name: source_generated_at, data_type: date, data_tests: [not_null]}
+      - {name: retrieved_at_utc, data_type: timestamptz, data_tests: [not_null]}
+      - {name: status, data_type: text, data_tests: [not_null]}
+      - {name: source_is_active, data_type: boolean, data_tests: [not_null]}
+      - {name: declared_row_count, data_type: bigint, data_tests: [not_null]}
+      - {name: is_fixture, data_type: boolean, data_tests: [not_null]}
+      - {name: dlt_load_id, data_type: text, data_tests: [not_null]}
+
+  - name: stg_cosif_balance_row
+    config: {contract: {enforced: true}}
+    columns:
+      - {name: source_period, data_type: varchar(6), data_tests: [not_null]}
+      - {name: report_month, data_type: date, data_tests: [not_null]}
+      - {name: document_code, data_type: text, data_tests: [not_null]}
+      - {name: institution_cnpj, data_type: text, data_tests: [not_null]}
+      - {name: agency_code, data_type: text}
+      - {name: institution_name, data_type: text, data_tests: [not_null]}
+      - {name: conglomerate_code, data_type: text}
+      - {name: conglomerate_name, data_type: text}
+      - {name: taxonomy, data_type: text}
+      - {name: account_code, data_type: text, data_tests: [not_null]}
+      - {name: account_name, data_type: text, data_tests: [not_null]}
+      - {name: balance_raw, data_type: text, data_tests: [not_null]}
+      - {name: balance_amount, data_type: "numeric(38,2)", data_tests: [not_null]}
+      - {name: source_url, data_type: text, data_tests: [not_null]}
+      - {name: source_checksum, data_type: text, data_tests: [not_null]}
+      - {name: source_generated_at, data_type: date, data_tests: [not_null]}
+      - {name: retrieved_at_utc, data_type: timestamptz, data_tests: [not_null]}
+      - {name: file_row_number, data_type: bigint, data_tests: [not_null]}
+      - {name: is_fixture, data_type: boolean, data_tests: [not_null]}
+      - {name: dlt_load_id, data_type: text, data_tests: [not_null]}
+
+  - name: stg_sgs_series_metadata
+    config: {contract: {enforced: true}}
+    columns:
+      - {name: series_code, data_type: text, data_tests: [not_null, unique]}
+      - {name: theme, data_type: text, data_tests: [not_null]}
+      - {name: display_name, data_type: text, data_tests: [not_null]}
+      - {name: official_title, data_type: text, data_tests: [not_null]}
+      - {name: unit, data_type: text, data_tests: [not_null]}
+      - {name: frequency, data_type: text, data_tests: [not_null]}
+      - {name: source_start_date, data_type: date, data_tests: [not_null]}
+      - {name: observation_semantics, data_type: text, data_tests: [not_null]}
+      - {name: monthly_alignment, data_type: text, data_tests: [not_null]}
+      - {name: derived_metric, data_type: text, data_tests: [not_null]}
+      - {name: max_expected_lag_months, data_type: bigint, data_tests: [not_null]}
+      - {name: revision_policy, data_type: text, data_tests: [not_null]}
+      - {name: source_url, data_type: text, data_tests: [not_null]}
+      - {name: metadata_url, data_type: text, data_tests: [not_null]}
+      - {name: dlt_load_id, data_type: text, data_tests: [not_null]}
+
+  - name: stg_sgs_observation
+    config: {contract: {enforced: true}}
+    columns:
+      - {name: series_code, data_type: text, data_tests: [not_null]}
+      - {name: source_observation_date, data_type: date, data_tests: [not_null]}
+      - {name: report_month, data_type: date, data_tests: [not_null]}
+      - {name: value_raw, data_type: text, data_tests: [not_null]}
+      - {name: value, data_type: "numeric(38,10)", data_tests: [not_null]}
+      - {name: retrieved_at_utc, data_type: timestamptz, data_tests: [not_null]}
+      - {name: source_url, data_type: text, data_tests: [not_null]}
+      - {name: is_fixture, data_type: boolean, data_tests: [not_null]}
+      - {name: dlt_load_id, data_type: text, data_tests: [not_null]}
+
+  - name: stg_sgs_fetch_manifest
+    config: {contract: {enforced: true}}
+    columns:
+      - {name: series_code, data_type: text, data_tests: [not_null]}
+      - {name: requested_start_date, data_type: date, data_tests: [not_null]}
+      - {name: requested_end_date, data_type: date, data_tests: [not_null]}
+      - {name: retrieved_at_utc, data_type: timestamptz, data_tests: [not_null]}
+      - {name: status, data_type: text, data_tests: [not_null]}
+      - {name: response_count, data_type: bigint, data_tests: [not_null]}
+      - {name: is_fixture, data_type: boolean, data_tests: [not_null]}
+      - {name: dlt_load_id, data_type: text, data_tests: [not_null]}
