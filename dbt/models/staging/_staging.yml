@@ -2,6 +2,9 @@ version: 2
 
 models:
   - name: stg_cosif_file_manifest
+    description: >-
+      Typed file-version evidence used by deterministic active-file selection.
+      {{ doc('source_evidence') }}
     config: {contract: {enforced: true}}
     columns:
       - {name: source_period, data_type: varchar(6), data_tests: [not_null]}
@@ -17,6 +20,9 @@ models:
       - {name: dlt_load_id, data_type: text, data_tests: [not_null]}
 
   - name: stg_cosif_balance_row
+    description: >-
+      Renamed and typed source-faithful bank/account balances; no accounting mapping
+      or aggregation is applied. {{ doc('fixture_boundary') }}
     config: {contract: {enforced: true}}
     columns:
       - {name: source_period, data_type: varchar(6), data_tests: [not_null]}
@@ -41,6 +47,7 @@ models:
       - {name: dlt_load_id, data_type: text, data_tests: [not_null]}
 
   - name: stg_sgs_series_metadata
+    description: Governed five-series registry metadata with its authored semantic rules.
     config: {contract: {enforced: true}}
     columns:
       - {name: series_code, data_type: text, data_tests: [not_null, unique]}
@@ -60,6 +67,9 @@ models:
       - {name: dlt_load_id, data_type: text, data_tests: [not_null]}
 
   - name: stg_sgs_observation
+    description: >-
+      Native SGS values with exact decimals and explicit report-month alignment.
+      {{ doc('macro_month_alignment') }}
     config: {contract: {enforced: true}}
     columns:
       - {name: series_code, data_type: text, data_tests: [not_null]}
@@ -73,6 +83,7 @@ models:
       - {name: dlt_load_id, data_type: text, data_tests: [not_null]}
 
   - name: stg_sgs_fetch_manifest
+    description: Bounded API request outcomes used to distinguish freshness from acquisition failure.
     config: {contract: {enforced: true}}
     columns:
       - {name: series_code, data_type: text, data_tests: [not_null]}

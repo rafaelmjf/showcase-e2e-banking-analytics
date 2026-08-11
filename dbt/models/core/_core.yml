@@ -2,36 +2,40 @@ version: 2
 
 models:
   - name: cosif_file_manifest
-    description: Every source file version with one deterministic selected version per period.
+    description: >-
+      Every source file version with one deterministic selected version per period.
+      {{ doc('cosif_active_selection') }}
     columns:
-      - {name: source_checksum, data_tests: [not_null, unique]}
-      - {name: source_period, data_tests: [not_null]}
-      - {name: is_selected, data_tests: [not_null]}
+      - {name: source_checksum, description: Exact file-version identity., data_tests: [not_null, unique]}
+      - {name: source_period, description: Source reporting period formatted YYYYMM., data_tests: [not_null]}
+      - {name: is_selected, description: True for the one version eligible for downstream facts., data_tests: [not_null]}
 
   - name: account_balance
-    description: Source-faithful account rows from selected complete file versions only.
+    description: >-
+      Source-faithful account rows from selected complete file versions only. This is
+      a canonical fact, not a public reporting-line mart. {{ doc('fixture_boundary') }}
     columns:
-      - {name: source_checksum, data_tests: [not_null]}
-      - {name: file_row_number, data_tests: [not_null]}
-      - {name: institution_cnpj, data_tests: [not_null]}
-      - {name: account_code, data_tests: [not_null]}
-      - {name: balance_amount, data_tests: [not_null]}
+      - {name: source_checksum, description: Selected file-version identity., data_tests: [not_null]}
+      - {name: file_row_number, description: Physical row identity within the source file., data_tests: [not_null]}
+      - {name: institution_cnpj, description: Institution CNPJ exactly as represented by the source., data_tests: [not_null]}
+      - {name: account_code, description: Current-standard COSIF account code., data_tests: [not_null]}
+      - {name: balance_amount, description: Source balance in Brazilian reais., data_tests: [not_null]}
 
   - name: bank_period
-    description: One institution and report month observed in selected account balances.
+    description: One institution/report-month entity observed in selected account balances.
     columns:
-      - {name: bank_period_key, data_tests: [not_null, unique]}
-      - {name: report_month, data_tests: [not_null]}
-      - {name: institution_cnpj, data_tests: [not_null]}
+      - {name: bank_period_key, description: Deterministic institution plus month key., data_tests: [not_null, unique]}
+      - {name: report_month, description: First calendar day representing the reporting month., data_tests: [not_null]}
+      - {name: institution_cnpj, description: Institution identifier at this period., data_tests: [not_null]}
 
   - name: cosif_account
-    description: Latest observed current-standard description for each account code.
+    description: Latest observed current-standard description for each COSIF account code.
     columns:
       - {name: account_code, data_tests: [not_null, unique]}
       - {name: account_name, data_tests: [not_null]}
 
   - name: macro_series
-    description: Accepted semantic metadata for exactly five MVP context series.
+    description: Accepted semantic metadata for exactly five monthly MVP context series.
     columns:
       - {name: series_code, data_tests: [not_null, unique]}
       - name: frequency
@@ -40,7 +44,9 @@ models:
               arguments: {values: ["monthly"]}
 
   - name: macro_observation
-    description: Native macro values with explicit report-month alignment.
+    description: >-
+      Native macro values with explicit report-month alignment and no causal claim.
+      {{ doc('macro_month_alignment') }}
     columns:
       - {name: series_code, data_tests: [not_null]}
       - {name: source_observation_date, data_tests: [not_null]}

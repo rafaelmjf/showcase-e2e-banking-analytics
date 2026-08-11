@@ -3,48 +3,78 @@ version: 2
 sources:
   - name: raw_cosif
     schema: raw_cosif
-    description: Source-faithful COSIF rows and file manifests landed by dlt.
+    description: >-
+      Source-faithful COSIF rows and immutable file-version evidence landed by dlt.
+      {{ doc('source_evidence') }} {{ doc('fixture_boundary') }}
+    meta:
+      owner: data-layer
+      source_authority: Banco Central do Brasil
+      license: ODbL
     tables:
       - name: cosif_file_manifest
+        description: One row per acquired checksum, including completion and selection inputs.
         columns:
           - name: source_checksum
+            description: SHA-256 identity of the exact compressed source body.
             data_tests: [not_null, unique]
           - name: source_period
+            description: Reporting period declared by the catalog, formatted YYYYMM.
             data_tests: [not_null]
       - name: cosif_balance_row
+        description: One source account balance at checksum and physical file-row grain.
         columns:
           - name: source_checksum
+            description: Parent file-version identity.
             data_tests: [not_null]
           - name: file_row_number
+            description: Stable non-header row position inside the source CSV.
             data_tests: [not_null]
           - name: saldo_raw
+            description: Original locale-formatted balance text.
             data_tests: [not_null]
           - name: saldo
+            description: Exact decimal interpretation of saldo_raw in Brazilian reais.
             data_tests: [not_null]
 
   - name: raw_macro
     schema: raw_macro
-    description: Verified SGS metadata, observations and fetch manifests landed by dlt.
+    description: >-
+      Verified SGS registry metadata, native observations and bounded fetch evidence
+      landed by dlt. {{ doc('macro_month_alignment') }} {{ doc('fixture_boundary') }}
+    meta:
+      owner: data-layer
+      source_authority: Banco Central do Brasil
+      license: ODbL
     tables:
       - name: sgs_series_metadata
+        description: One governed semantic contract for each accepted SGS series.
         columns:
           - name: series_code
+            description: Stable numeric identifier assigned by BCB SGS.
             data_tests: [not_null, unique]
       - name: sgs_observation
+        description: One native observation per series and source date.
         columns:
           - name: series_code
+            description: Parent SGS series identifier.
             data_tests: [not_null]
           - name: source_observation_date
+            description: Observation date exactly as published by the API.
             data_tests: [not_null]
           - name: value_raw
+            description: Decimal value text before warehouse typing.
             data_tests: [not_null]
           - name: value
+            description: Exact typed decimal value without semantic derivation.
             data_tests: [not_null]
       - name: sgs_fetch_manifest
+        description: One outcome per series, requested date window and fixture flag.
         columns:
           - name: series_code
+            description: Requested SGS series identifier.
             data_tests: [not_null]
           - name: status
+            description: Complete only when the bounded response passed every profile control.
             data_tests:
               - accepted_values:
                   arguments:

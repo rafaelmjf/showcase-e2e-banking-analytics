@@ -93,6 +93,12 @@ jobs:
           -a defs
           -j fixture_end_to_end
 
+      - name: Generate dbt catalog
+        run: >-
+          uv run --locked dbt docs generate
+          --project-dir dbt
+          --profiles-dir dbt
+
       - name: Preserve verification evidence
         uses: actions/upload-artifact@v7.0.1
         with:
@@ -101,5 +107,7 @@ jobs:
             artifacts/generated/fixture_landing_evidence.csv
             dbt/target/manifest.json
             dbt/target/run_results.json
+            dbt/target/catalog.json
+            dbt/target/index.html
           if-no-files-found: error
           retention-days: 30
