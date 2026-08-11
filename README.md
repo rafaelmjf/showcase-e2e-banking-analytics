@@ -69,7 +69,8 @@ certified live landing, reporting marts or BI model has been completed yet.
   keeping the live/mart boundary explicit. The retained evidence is documented in
   [the dbt catalog checkpoint](docs/checkpoints/08-dbt-catalog.md).
 
-Start with the [implementation plan](plan/README.md), the live
+Start with the [architecture and project guide](docs/architecture.md), the
+[implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).
 
 Public-facing framing: **Where do Brazil's largest banks get their money, where do
