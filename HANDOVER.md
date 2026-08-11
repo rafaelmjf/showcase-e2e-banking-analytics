@@ -18,6 +18,7 @@ Its machine-readable nine-control readiness assessment currently reports blocked
 Generated dbt docs now describe every implemented source and model and are retained
 as a CI artifact.
 `docs/architecture.md` now provides the newcomer-facing project narrative and ERDs.
+`docs/runbook.md` now provides the complete fixture/live recovery and evidence path.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -149,12 +150,17 @@ passed 51 tests, including checks that all 16 data assets are named and the unbu
 official/mart/Power BI boundary remains explicit. See
 `docs/checkpoints/09-architecture-guide.md`.
 
+The operational runbook checkpoint is complete. It documents all eight data CLI
+stages, the fixture and official Dagster paths, eight gate diagnoses, evidence review
+and the BI handoff boundary. GitHub Actions
+[run 31449393897](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31449393897)
+passed 53 tests and the complete fixture/dbt/docs/Dagster regression. See
+`docs/checkpoints/10-operational-runbook.md`.
+
 ## Next action
 
-Add an operational runbook for fixture regression, bounded live retries, a future
-green official run, evidence review and recovery from each hard gate. Retry one
-bounded 0B download first at each source checkpoint; also retry the 0D live
-acquisition command when the BCB services recover:
+No further source-independent data-layer build is required before the next gate.
+Retry one bounded 0B download and the 0D macro acquisition when BCB services recover:
 
 ```powershell
 uv run --locked banking-data download-cosif --start 202603 --end 202603 `

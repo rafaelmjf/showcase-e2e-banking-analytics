@@ -65,3 +65,8 @@ Artifact `9085610234` contains the browsable site and machine-readable catalog f
 all 16 implemented data assets to the newcomer-facing architecture guide. It also
 records the successful dbt and Dagster evidence from
 [run 31449192239](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31449192239).
+
+`runbook_checkpoint_summary.csv` records the clean run that verifies all eight
+operational CLI stages and eight diagnostic gates are represented in the recovery
+runbook. [Run 31449393897](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31449393897)
+also preserves the associated dbt and Dagster regression evidence.
