@@ -60,3 +60,8 @@ records its 3 passing source controls, 5 failing source controls and blocked res
 [GitHub Actions run 31448952033](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31448952033).
 Artifact `9085610234` contains the browsable site and machine-readable catalog for all
 11 models and 5 source tables.
+
+`architecture_guide_checkpoint_summary.csv` records the clean regression that pins
+all 16 implemented data assets to the newcomer-facing architecture guide. It also
+records the successful dbt and Dagster evidence from
+[run 31449192239](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31449192239).

@@ -68,6 +68,9 @@ certified live landing, reporting marts or BI model has been completed yet.
 - Generated dbt docs describe all five source tables and 11 implemented models while
   keeping the live/mart boundary explicit. The retained evidence is documented in
   [the dbt catalog checkpoint](docs/checkpoints/08-dbt-catalog.md).
+- A presentation-ready [architecture guide](docs/architecture.md) consolidates the
+  problem, inputs, defended stack, layer ERDs, quality controls and the exact
+  implemented/planned boundary.
 
 Start with the [architecture and project guide](docs/architecture.md), the
 [implementation plan](plan/README.md), the live

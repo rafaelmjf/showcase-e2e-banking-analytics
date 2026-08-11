@@ -1,0 +1,2 @@
+github_run_id,commit_sha,python_tests,documented_assets,raw_erds,core_erds,dbt_nodes,dagster_run_id,status
+31449192239,f9feb7459015c7da5d8ed260abae300242a9acf2,51,16,1,1,117,364228dc-1c1e-48ff-b91d-45cf9e69827c,success

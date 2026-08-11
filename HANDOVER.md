@@ -17,6 +17,7 @@ A manual bounded official-sample workflow now hard-gates the complete live route
 Its machine-readable nine-control readiness assessment currently reports blocked.
 Generated dbt docs now describe every implemented source and model and are retained
 as a CI artifact.
+`docs/architecture.md` now provides the newcomer-facing project narrative and ERDs.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -140,12 +141,20 @@ Downloaded artifact `9085610234` contains descriptions for all 11 models and all
 sources plus `catalog.json` and `index.html`. The docs explicitly state that marts
 and live certification are absent. See `docs/checkpoints/08-dbt-catalog.md`.
 
+The current-state architecture guide is complete. It covers the problem, solution,
+inputs, stack rationale, no-Data-Vault decision, implemented layer ERDs, quality
+strategy, challenges and implemented/planned boundary. GitHub Actions
+[run 31449192239](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31449192239)
+passed 51 tests, including checks that all 16 data assets are named and the unbuilt
+official/mart/Power BI boundary remains explicit. See
+`docs/checkpoints/09-architecture-guide.md`.
+
 ## Next action
 
-Add a concise current-state architecture page with layer responsibilities and ERDs
-for the 16 implemented assets, clearly separating implemented core from planned
-marts. Retry one bounded 0B download first at each source checkpoint; also retry the
-0D live acquisition command when the BCB services recover:
+Add an operational runbook for fixture regression, bounded live retries, a future
+green official run, evidence review and recovery from each hard gate. Retry one
+bounded 0B download first at each source checkpoint; also retry the 0D live
+acquisition command when the BCB services recover:
 
 ```powershell
 uv run --locked banking-data download-cosif --start 202603 --end 202603 `
