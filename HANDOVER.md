@@ -15,6 +15,8 @@ Dagster can now select fixture or official evidence without changing its 16 asse
 keys; official mode fails definition construction when any evidence input is absent.
 A manual bounded official-sample workflow now hard-gates the complete live route.
 Its machine-readable nine-control readiness assessment currently reports blocked.
+Generated dbt docs now describe every implemented source and model and are retained
+as a CI artifact.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -131,12 +133,19 @@ then wrote nine controls: period/series/window coverage passed, five completenes
 controls failed, and the overall state was `blocked`. Artifact `9085517313` retains
 the full CSV; no official load ran. See `docs/checkpoints/07-live-readiness.md`.
 
+The curated dbt catalog checkpoint is complete. GitHub Actions
+[run 31448952033](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31448952033)
+passed 49 tests, the 117-node build, Dagster materialization and `dbt docs generate`.
+Downloaded artifact `9085610234` contains descriptions for all 11 models and all 5
+sources plus `catalog.json` and `index.html`. The docs explicitly state that marts
+and live certification are absent. See `docs/checkpoints/08-dbt-catalog.md`.
+
 ## Next action
 
-Complete the curated dbt catalog for the implemented source, staging and core models,
-then generate and preserve a docs artifact without implying that marts exist. Retry
-one bounded 0B download first at each source checkpoint; also retry the 0D live
-acquisition command when the BCB services recover:
+Add a concise current-state architecture page with layer responsibilities and ERDs
+for the 16 implemented assets, clearly separating implemented core from planned
+marts. Retry one bounded 0B download first at each source checkpoint; also retry the
+0D live acquisition command when the BCB services recover:
 
 ```powershell
 uv run --locked banking-data download-cosif --start 202603 --end 202603 `

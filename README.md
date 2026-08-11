@@ -65,6 +65,9 @@ certified live landing, reporting marts or BI model has been completed yet.
   blocked until all source completeness conditions pass. The contract and current
   result are documented in
   [the readiness checkpoint](docs/checkpoints/07-live-readiness.md).
+- Generated dbt docs describe all five source tables and 11 implemented models while
+  keeping the live/mart boundary explicit. The retained evidence is documented in
+  [the dbt catalog checkpoint](docs/checkpoints/08-dbt-catalog.md).
 
 Start with the [implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).

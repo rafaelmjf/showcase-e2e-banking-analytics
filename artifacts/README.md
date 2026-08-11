@@ -55,3 +55,8 @@ skipped, and the error evidence was preserved as artifact `9085384703`.
 blocked live run that first produced the nine-control readiness contract. The full
 `live_readiness.csv` is retained in GitHub artifact `9085517313`; the committed row
 records its 3 passing source controls, 5 failing source controls and blocked result.
+
+`dbt_catalog_checkpoint_summary.csv` records the curated generated-docs package from
+[GitHub Actions run 31448952033](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31448952033).
+Artifact `9085610234` contains the browsable site and machine-readable catalog for all
+11 models and 5 source tables.

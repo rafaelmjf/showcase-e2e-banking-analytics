@@ -1,0 +1,2 @@
+github_run_id,commit_sha,python_tests,dbt_nodes,dbt_models,described_models,dbt_sources,described_sources,custom_doc_blocks,catalog_relations,dagster_run_id,evidence_artifact_id
+31448952033,7d333f032a051ecc21520ae8bef7cd8684c9b00a,49,117,11,11,5,5,4,16,9b25831c-4302-4f55-a0ff-d8cb4f13b453,9085610234
