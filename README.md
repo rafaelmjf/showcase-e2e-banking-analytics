@@ -49,6 +49,10 @@ certified live landing, reporting marts or BI model has been completed yet.
 - The fixture Dagster graph materializes five dlt raw assets and 11 dbt assets with
   continuous lineage. Its independently reproduced boundary is documented in
   [the Dagster checkpoint](docs/checkpoints/03-fixture-dagster.md).
+- Verified COSIF and SGS profiler outputs now map into the same production dlt
+  contracts and were exercised in an isolated PostgreSQL integration test. The live
+  502 boundary is documented in
+  [the official adapter checkpoint](docs/checkpoints/04-official-landing-adapters.md).
 
 Start with the [implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).

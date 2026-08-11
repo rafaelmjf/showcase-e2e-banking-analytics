@@ -9,6 +9,8 @@ five-series macro contract are implemented, tested and preserved as repository
 evidence. Fixture-backed dlt/PostgreSQL landing, dbt staging/core and a 16-asset
 Dagster graph are complete; no certified live landing, reporting marts or Power BI
 files have been implemented. Fixture success is not live-data certification.
+The production COSIF/SGS evidence-to-dlt adapters are also implemented and verified
+against isolated mocked source bodies, but remain unexecuted on live observations.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -92,13 +94,22 @@ reproduced the full job on PostgreSQL 18 in 1 minute 12 seconds: 38 Python tests
 definition validation, dlt materialization and both 117-node dbt builds succeeded.
 See `docs/checkpoints/03-fixture-dagster.md`.
 
+The official landing adapter checkpoint is complete as an implementation gate. It
+reads persisted profiler evidence, rejects partial or mismatched source sets and
+streams the exact production contracts into dlt. GitHub Actions
+[run 31447549208](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31447549208)
+passed 44 tests, including an isolated PostgreSQL load with exact raw counts
+`(1, 2, 5, 5, 5)`, followed by the full 117-node dbt and Dagster regression. The
+11 August live retry still returned HTTP 502 for COSIF and all five SGS series. See
+`docs/checkpoints/04-official-landing-adapters.md`.
+
 ## Next action
 
-Connect the implemented official COSIF archive and SGS API readers to the same strict
-dlt landing contracts. Keep this adapter independently testable with bounded mock
-source bodies while the official endpoints are unavailable. Retry one bounded 0B
-download first at each source checkpoint; also retry the 0D live acquisition command
-when the BCB services recover:
+Add a source-mode switch to the Dagster code location so the same five raw asset keys
+can use either fixture inputs or fully verified official evidence. Default to fixture
+mode and fail definition loading when official mode lacks an explicit evidence path.
+Retry one bounded 0B download first at each source checkpoint; also retry the 0D live
+acquisition command when the BCB services recover:
 
 ```powershell
 uv run --locked banking-data download-cosif --start 202603 --end 202603 `

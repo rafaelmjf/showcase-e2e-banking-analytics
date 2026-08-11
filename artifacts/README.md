@@ -34,3 +34,9 @@ fixture graph from
 [GitHub Actions run 31446855199](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31446855199),
 including the Dagster run identity and its successful 117-node dbt build. It does
 not represent a live BCB load.
+
+`official_adapter_checkpoint_summary.csv` records the isolated PostgreSQL contract
+test from
+[GitHub Actions run 31447549208](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31447549208).
+The bodies were mocked BCB-shaped inputs and the database was removed after the test;
+the artifact proves production adapter mechanics, not live-source availability.

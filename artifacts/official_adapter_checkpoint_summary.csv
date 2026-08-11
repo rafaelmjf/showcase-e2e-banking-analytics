@@ -1,0 +1,2 @@
+github_run_id,commit_sha,python_tests,isolated_postgres_integration,cosif_manifest_rows,cosif_balance_rows,macro_metadata_rows,macro_observation_rows,macro_fetch_manifest_rows,live_cosif_retry,live_macro_complete_series
+31447549208,e26d59586ac063380425c540987f9b773186eb7a,44,passed,1,2,5,5,5,http_502,0_of_5_http_502
