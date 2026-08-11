@@ -7,7 +7,7 @@ from pathlib import Path
 
 import httpx
 import pytest
-from typer.testing import CliRunner
+from typer.main import get_command
 
 from banking_analytics.cli import app
 from banking_analytics.pipelines.cosif import BALANCE_COLUMNS, MANIFEST_COLUMNS
@@ -183,8 +183,9 @@ def test_macro_landing_rejects_any_unpassed_series() -> None:
 
 
 def test_official_load_command_is_registered() -> None:
-    result = CliRunner().invoke(app, ["load-official", "--help"])
+    root_command = get_command(app)
+    command = root_command.commands["load-official"]  # type: ignore[attr-defined]
+    parameter_names = {parameter.name for parameter in command.params}
 
-    assert result.exit_code == 0
-    assert "--cosif-manifest" in result.output
-    assert "--macro-observations" in result.output
+    assert "cosif_manifest" in parameter_names
+    assert "macro_observations" in parameter_names
