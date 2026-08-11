@@ -57,6 +57,10 @@ certified live landing, reporting marts or BI model has been completed yet.
   evidence without changing any of the 16 asset keys. The fail-closed behavior and
   live boundary are documented in
   [the source-mode checkpoint](docs/checkpoints/05-dagster-source-modes.md).
+- A manual official-sample workflow independently acquires both source families and
+  blocks every downstream step unless all evidence is complete. Its verified HTTP
+  502 failure path is documented in
+  [the sample-gate checkpoint](docs/checkpoints/06-official-sample-gate.md).
 
 Start with the [implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).

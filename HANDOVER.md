@@ -13,6 +13,7 @@ The production COSIF/SGS evidence-to-dlt adapters are also implemented and verif
 against isolated mocked source bodies, but remain unexecuted on live observations.
 Dagster can now select fixture or official evidence without changing its 16 asset
 keys; official mode fails definition construction when any evidence input is absent.
+A manual bounded official-sample workflow now hard-gates the complete live route.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -113,13 +114,21 @@ passed 47 tests, materialized both official raw asset groups against an isolated
 database, constructed the 16-asset official graph and then completed the full fixture
 regression. See `docs/checkpoints/05-dagster-source-modes.md`.
 
+The manual official-sample workflow is implemented and its failure path is verified.
+[Run 31448296850](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31448296850)
+passed 47 tests and parsed all 454 catalog records, then observed HTTP 502 for the
+selected COSIF file and all five macro series. The acquisition gate failed exactly as
+designed; PostgreSQL, official dbt and official Dagster steps were skipped, while
+artifact `9085384703` retained both source outcomes. See
+`docs/checkpoints/06-official-sample-gate.md`.
+
 ## Next action
 
-Add one manual, hard-gated official-sample workflow that catalogs, downloads,
-profiles, lands, builds dbt and executes `official_end_to_end` on PostgreSQL 18. It
-must retain failure evidence but never continue a partial load. Retry one bounded 0B
-download first at each source checkpoint; also retry the 0D live acquisition command
-when the BCB services recover:
+Add a machine-readable implementation-readiness assessment that combines the COSIF
+download/profile and SGS profile evidence into explicit blocked/ready controls. It
+must remain blocked on the current artifacts and become ready only when every source
+gate reconciles. Retry one bounded 0B download first at each source checkpoint; also
+retry the 0D live acquisition command when the BCB services recover:
 
 ```powershell
 uv run --locked banking-data download-cosif --start 202603 --end 202603 `
@@ -130,8 +139,8 @@ When that succeeds, run the full download and profile commands recorded in the 0
 checkpoint. The active December 2025 URL is the replacement ending in
 `202512BANCOS.zip.csv.zip`, not the earlier conventional filename.
 
-Do not begin the full dbt model until findings are recorded in
-`docs/source-profile.md`.
+Do not begin reporting-line mapping, top-15 selection or marts until findings are
+recorded in `docs/source-profile.md`.
 
 ## Known cautions
 

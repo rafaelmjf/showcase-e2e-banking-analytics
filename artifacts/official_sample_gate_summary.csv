@@ -1,0 +1,2 @@
+github_run_id,commit_sha,python_tests,catalog_records,active_catalog_periods,cosif_complete_files,cosif_http_status,macro_complete_series,acquisition_gate,warehouse_load,official_dbt,official_dagster,evidence_artifact_id
+31448296850,e5aa8718387ff3dea60822ceef17af6d58806c29,47,454,453,0,502,0_of_5,failed_as_designed,skipped,skipped,skipped,9085384703
