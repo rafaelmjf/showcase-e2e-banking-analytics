@@ -1,0 +1,183 @@
+name: Official bounded sample
+
+on:
+  workflow_dispatch:
+    inputs:
+      cosif_start_period:
+        description: First COSIF period (YYYYMM)
+        required: true
+        default: "202603"
+      cosif_end_period:
+        description: Last COSIF period (YYYYMM)
+        required: true
+        default: "202603"
+      macro_start_date:
+        description: First macro observation date (YYYY-MM-DD)
+        required: true
+        default: "2025-01-01"
+      macro_end_date:
+        description: Last macro observation date (YYYY-MM-DD)
+        required: true
+        default: "2026-03-31"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: official-bounded-sample
+  cancel-in-progress: false
+
+jobs:
+  sample:
+    name: Acquire, land and materialize official sample
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BANKING_POSTGRES_HOST: localhost
+      BANKING_POSTGRES_PORT: "5432"
+      BANKING_POSTGRES_DB: banking
+      BANKING_POSTGRES_USER: banking
+      BANKING_POSTGRES_PASSWORD: banking_local_only
+      BANKING_RUN_POSTGRES_TESTS: "1"
+
+    services:
+      warehouse:
+        image: postgres:18
+        env:
+          POSTGRES_DB: banking
+          POSTGRES_USER: banking
+          POSTGRES_PASSWORD: banking_local_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U banking -d banking"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v9.0.0
+        with:
+          version: "0.11.19"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install Python and locked project
+        run: |
+          uv python install 3.12
+          uv sync --locked --extra dev
+
+      - name: Verify implementation
+        run: |
+          uv run --locked ruff check src tests
+          uv run --locked pytest
+
+      - name: Read official COSIF catalog
+        id: catalog
+        continue-on-error: true
+        run: >-
+          uv run --locked banking-data source-catalog
+          --output artifacts/generated/source_catalog.csv
+
+      - name: Download and validate COSIF archives
+        id: cosif_download
+        if: steps.catalog.outcome == 'success'
+        continue-on-error: true
+        run: >-
+          uv run --locked banking-data download-cosif
+          --start "${{ inputs.cosif_start_period }}"
+          --end "${{ inputs.cosif_end_period }}"
+          --catalog artifacts/generated/source_catalog.csv
+          --download-dir data/downloads/cosif
+          --manifest artifacts/generated/cosif_download_manifest.csv
+          --attempts 3
+
+      - name: Profile downloaded COSIF archives
+        id: cosif_profile
+        if: steps.cosif_download.outcome == 'success'
+        continue-on-error: true
+        run: >-
+          uv run --locked banking-data profile-cosif
+          --manifest artifacts/generated/cosif_download_manifest.csv
+          --output artifacts/generated/cosif_source_profile.csv
+
+      - name: Profile official SGS series
+        id: macro_profile
+        continue-on-error: true
+        run: >-
+          uv run --locked banking-data profile-sgs
+          --registry config/macro_series_registry.csv
+          --start "${{ inputs.macro_start_date }}"
+          --end "${{ inputs.macro_end_date }}"
+          --observations artifacts/generated/macro_observations.csv
+          --profile artifacts/generated/macro_profile.csv
+          --attempts 3
+
+      - name: Enforce complete acquisition gate
+        id: acquisition_gate
+        run: |
+          test "${{ steps.catalog.outcome }}" = "success"
+          test "${{ steps.cosif_download.outcome }}" = "success"
+          test "${{ steps.cosif_profile.outcome }}" = "success"
+          test "${{ steps.macro_profile.outcome }}" = "success"
+
+      - name: Load verified official evidence
+        run: >-
+          uv run --locked banking-data load-official
+          --cosif-manifest artifacts/generated/cosif_download_manifest.csv
+          --cosif-profile artifacts/generated/cosif_source_profile.csv
+          --macro-observations artifacts/generated/macro_observations.csv
+          --macro-profile artifacts/generated/macro_profile.csv
+          --macro-start "${{ inputs.macro_start_date }}"
+          --macro-end "${{ inputs.macro_end_date }}"
+
+      - name: Build and test official dbt core
+        run: >-
+          uv run --locked dbt build
+          --project-dir dbt
+          --profiles-dir dbt
+
+      - name: Validate official Dagster definitions
+        env:
+          BANKING_SOURCE_MODE: official
+          BANKING_OFFICIAL_COSIF_MANIFEST: artifacts/generated/cosif_download_manifest.csv
+          BANKING_OFFICIAL_COSIF_PROFILE: artifacts/generated/cosif_source_profile.csv
+          BANKING_OFFICIAL_MACRO_OBSERVATIONS: artifacts/generated/macro_observations.csv
+          BANKING_OFFICIAL_MACRO_PROFILE: artifacts/generated/macro_profile.csv
+          BANKING_OFFICIAL_MACRO_START: ${{ inputs.macro_start_date }}
+          BANKING_OFFICIAL_MACRO_END: ${{ inputs.macro_end_date }}
+        run: >-
+          uv run --locked dagster definitions validate
+          -f orchestration/definitions.py
+          -a defs
+
+      - name: Materialize official asset graph
+        env:
+          BANKING_SOURCE_MODE: official
+          BANKING_OFFICIAL_COSIF_MANIFEST: artifacts/generated/cosif_download_manifest.csv
+          BANKING_OFFICIAL_COSIF_PROFILE: artifacts/generated/cosif_source_profile.csv
+          BANKING_OFFICIAL_MACRO_OBSERVATIONS: artifacts/generated/macro_observations.csv
+          BANKING_OFFICIAL_MACRO_PROFILE: artifacts/generated/macro_profile.csv
+          BANKING_OFFICIAL_MACRO_START: ${{ inputs.macro_start_date }}
+          BANKING_OFFICIAL_MACRO_END: ${{ inputs.macro_end_date }}
+        run: >-
+          uv run --locked dagster job execute
+          -f orchestration/definitions.py
+          -a defs
+          -j official_end_to_end
+
+      - name: Preserve bounded-run evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: official-sample-${{ inputs.cosif_start_period }}-${{ inputs.cosif_end_period }}
+          path: |
+            artifacts/generated/*.csv
+            dbt/target/manifest.json
+            dbt/target/run_results.json
+          if-no-files-found: warn
+          retention-days: 30
