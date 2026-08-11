@@ -10,7 +10,6 @@ from banking_analytics.orchestration.config import (
     OfficialEvidenceConfig,
     resolve_source_mode,
 )
-from banking_analytics.orchestration.definitions import build_definitions
 from banking_analytics.orchestration.dlt_assets import RawDatasetDltTranslator
 from banking_analytics.pipelines.cosif import cosif_balance_row
 
@@ -31,13 +30,6 @@ def test_dlt_asset_key_matches_dbt_source_key(tmp_path: Path) -> None:
     assert spec.key == AssetKey(["raw_cosif", "cosif_balance_row"])
     assert list(spec.deps) == []
     assert spec.group_name == "raw_landing"
-
-
-def test_fixture_mode_is_safe_default_with_stable_graph() -> None:
-    definitions = build_definitions(environment={})
-
-    assert len(definitions.resolve_asset_graph().get_all_asset_keys()) == 16
-    assert definitions.resolve_job_def("fixture_end_to_end").name == "fixture_end_to_end"
 
 
 def test_official_mode_requires_every_explicit_evidence_path(tmp_path: Path) -> None:

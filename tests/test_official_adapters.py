@@ -12,12 +12,12 @@ import psycopg
 import pytest
 from dagster import materialize
 from dagster_dlt import DagsterDltResource
+from dbt.cli.main import dbtRunner
 from psycopg import sql
 from typer.main import get_command
 
 from banking_analytics.cli import app
 from banking_analytics.orchestration.config import OfficialEvidenceConfig
-from banking_analytics.orchestration.definitions import build_definitions
 from banking_analytics.orchestration.dlt_assets import build_official_dlt_assets
 from banking_analytics.pipelines.cosif import BALANCE_COLUMNS, MANIFEST_COLUMNS
 from banking_analytics.pipelines.macro import (
@@ -245,6 +245,12 @@ def test_mocked_official_evidence_loads_through_dlt(
             resources={"dlt": DagsterDltResource()},
         )
         assert result.success
+        parse_result = dbtRunner().invoke(
+            ["parse", "--project-dir", "dbt", "--profiles-dir", "dbt", "--quiet"]
+        )
+        assert parse_result.success
+        from banking_analytics.orchestration.definitions import build_definitions
+
         definitions = build_definitions(
             environment={
                 "BANKING_SOURCE_MODE": "official",
