@@ -1,0 +1,12 @@
+control_name,expected_value,actual_value,passed
+raw_cosif.cosif_file_manifest.row_count,2,2,True
+raw_cosif.cosif_file_manifest.unique_identity_count,2,2,True
+raw_cosif.cosif_balance_row.row_count,24,24,True
+raw_cosif.cosif_balance_row.unique_identity_count,24,24,True
+raw_macro.sgs_series_metadata.row_count,5,5,True
+raw_macro.sgs_series_metadata.unique_identity_count,5,5,True
+raw_macro.sgs_observation.row_count,15,15,True
+raw_macro.sgs_observation.unique_identity_count,15,15,True
+raw_macro.sgs_fetch_manifest.row_count,5,5,True
+raw_macro.sgs_fetch_manifest.unique_identity_count,5,5,True
+raw_cosif.accounting_identity_failure_count,0,0,True

@@ -26,13 +26,11 @@ reasoning is recorded in [ADR 0001](docs/adr/0001-initial-stack.md).
 
 ## Current status
 
-WP0 source profiling is in progress. No production data pipeline or BI model has
-been implemented yet.
+WP0 source profiling is in progress. The acquisition profilers and a fixture-backed
+dlt/PostgreSQL landing are implemented; no certified live landing, dbt marts,
+Dagster graph or BI model has been completed yet.
 
-- The official BCB balance-sheet bulk-download pattern is confirmed.
-- A January 2026 banks file was profiled: 0.90 MB compressed, 6.12 MB expanded and
-  49,364 balance rows.
-- Bank files for January through March 2026 were reachable on 11 August 2026.
+- The official BCB document catalog confirms the bank-file publication inventory.
 - The MVP analytical period is January 2025 through the latest published month.
 - The MVP uses banks only and the current COSIF standard; earlier history and
   consolidated scopes are explicitly deferred.
@@ -40,6 +38,11 @@ been implemented yet.
   from January 2025 through March 2026 and identifies one superseded December 2025
   file. Checkpoint 0B's checksum/ZIP/schema profiler is implemented and tested, and
   is waiting for recovery of direct file access after HTTP 502.
+- Checkpoint 0D fixes the exact five-series macro registry and monthly semantics;
+  live SGS materialization is also waiting for recovery from HTTP 502.
+- Synthetic contract fixtures load idempotently through dlt into PostgreSQL 18. The
+  independent smoke run and its strict non-production boundary are documented in
+  [the fixture landing checkpoint](docs/checkpoints/01-fixture-landing.md).
 
 Start with the [implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).

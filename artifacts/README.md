@@ -16,3 +16,10 @@ on 2026-08-10 UTC from commit `7be4e77`.
 The catalog is the authoritative publication inventory. The direct inventory is a
 time-bound accessibility check; blank `available` values accompanied by HTTP 502 do
 not mean that files are absent.
+
+## Fixture landing foundation
+
+`fixture_landing_evidence.csv` is the 11-control output from
+[GitHub Actions run 31445840964](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31445840964).
+It verifies repeat-load identities and the synthetic accounting reconciliation. It is
+implementation evidence, not official-source evidence.
