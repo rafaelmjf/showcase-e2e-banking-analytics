@@ -14,7 +14,7 @@ source bodies have been certified in this checkpoint.
 | 0A — source availability | Complete | [Checkpoint record](checkpoints/00a-source-availability.md) |
 | 0B — schema and volume | In progress; downloader/profiler tested, live download blocked by HTTP 502 | [Checkpoint record](checkpoints/00b-schema-volume.md) |
 | 0C — total assets and top 15 | Not started | — |
-| 0D — macro series | Not started | — |
+| 0D — macro series | Complete for official metadata and alignment; live API acquisition blocked by HTTP 502 | [Checkpoint record](checkpoints/00d-macro-series.md) |
 | 0E — readiness decision | Not started | — |
 
 This page will become the consolidated WP0 deliverable. Each checkpoint first

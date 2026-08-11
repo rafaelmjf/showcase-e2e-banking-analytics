@@ -4,9 +4,10 @@ Updated: 2026-08-11
 
 ## Current state
 
-WP0 checkpoint 0A is complete. The official COSIF document catalog and direct file
-probe are implemented, tested and preserved as repository evidence. No ingestion,
-database models, Dagster assets or Power BI files have been implemented.
+WP0 checkpoints 0A and 0D are complete. The official COSIF document catalog and the
+five-series macro contract are implemented, tested and preserved as repository
+evidence. No ingestion, database models, Dagster assets or Power BI files have been
+implemented.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -55,10 +56,23 @@ A development-only current mirror was also profiled to stress-check expected sca
 It is explicitly non-authoritative, ignored under `data/work/`, and does not satisfy
 the 0B exit gate.
 
+Checkpoint 0D is complete on its defined metadata and alignment gate. The strict
+registry fixes SGS 4189, 433, 24363, 20539 and 21082 with their official titles,
+units, monthly frequency, semantic treatment, publication-lag thresholds and source
+links. The bounded profiler preserves native dates and decimals and fails on gaps,
+duplicates or stale results. Ruff and all 33 tests pass.
+
+[GitHub Actions run 31445125485](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31445125485)
+independently verified the implementation and retained both output files. All five
+official SGS calls returned HTTP 502, so live observation materialisation remains an
+explicit WP3 blocker rather than fabricated evidence. See
+`docs/checkpoints/00d-macro-series.md`.
+
 ## Next action
 
 Resume checkpoint 0B from `plan/08-delivery.md` using the catalog-selected active
-URLs. Retry one bounded download first:
+URLs. Retry one bounded download first; also retry the 0D live acquisition command
+recorded in its checkpoint when the BCB services recover:
 
 ```powershell
 uv run --locked banking-data download-cosif --start 202603 --end 202603 `
@@ -81,5 +95,6 @@ Do not begin the full dbt model until findings are recorded in
 - Source availability follows a publication calendar; missing future periods are not
   ingestion failures.
 - HTTP 5xx responses are probe failures, not evidence that a period is missing.
+- Macro relationships are context and must not be described as causal.
 - Future complaints, rates, Pix, ESTBAN and IF.data enhancements must not expand the
   MVP contract before it is complete.
