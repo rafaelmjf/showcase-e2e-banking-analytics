@@ -53,6 +53,10 @@ certified live landing, reporting marts or BI model has been completed yet.
   contracts and were exercised in an isolated PostgreSQL integration test. The live
   502 boundary is documented in
   [the official adapter checkpoint](docs/checkpoints/04-official-landing-adapters.md).
+- Dagster now defaults safely to fixtures and can switch to fully specified official
+  evidence without changing any of the 16 asset keys. The fail-closed behavior and
+  live boundary are documented in
+  [the source-mode checkpoint](docs/checkpoints/05-dagster-source-modes.md).
 
 Start with the [implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).

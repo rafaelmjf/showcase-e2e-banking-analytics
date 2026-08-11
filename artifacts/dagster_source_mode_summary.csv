@@ -1,0 +1,2 @@
+github_run_id,commit_sha,python_tests,source_modes,stable_asset_keys,official_raw_materialization,official_job_defined,fixture_job_status,fixture_dagster_run_id
+31448066885,8d3dd3c60778a92de809e83a9bea6010d550c955,47,2,16,success,true,success,80cd0ae8-f2bc-48de-8dbf-3cc665b3e231

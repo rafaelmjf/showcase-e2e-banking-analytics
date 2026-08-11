@@ -40,3 +40,8 @@ test from
 [GitHub Actions run 31447549208](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31447549208).
 The bodies were mocked BCB-shaped inputs and the database was removed after the test;
 the artifact proves production adapter mechanics, not live-source availability.
+
+`dagster_source_mode_summary.csv` records the stable 16-key fixture/official graph
+and the official raw-materialization test from
+[GitHub Actions run 31448066885](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31448066885).
+It does not claim that the full official dbt graph ran on live observations.

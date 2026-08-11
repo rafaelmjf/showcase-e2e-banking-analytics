@@ -11,6 +11,8 @@ Dagster graph are complete; no certified live landing, reporting marts or Power 
 files have been implemented. Fixture success is not live-data certification.
 The production COSIF/SGS evidence-to-dlt adapters are also implemented and verified
 against isolated mocked source bodies, but remain unexecuted on live observations.
+Dagster can now select fixture or official evidence without changing its 16 asset
+keys; official mode fails definition construction when any evidence input is absent.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -103,13 +105,21 @@ passed 44 tests, including an isolated PostgreSQL load with exact raw counts
 11 August live retry still returned HTTP 502 for COSIF and all five SGS series. See
 `docs/checkpoints/04-official-landing-adapters.md`.
 
+The Dagster source-mode checkpoint is complete. The default remains `fixture`;
+`official` requires six explicit evidence/date variables and exposes
+`official_end_to_end` over the same lineage. GitHub Actions
+[run 31448066885](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31448066885)
+passed 47 tests, materialized both official raw asset groups against an isolated
+database, constructed the 16-asset official graph and then completed the full fixture
+regression. See `docs/checkpoints/05-dagster-source-modes.md`.
+
 ## Next action
 
-Add a source-mode switch to the Dagster code location so the same five raw asset keys
-can use either fixture inputs or fully verified official evidence. Default to fixture
-mode and fail definition loading when official mode lacks an explicit evidence path.
-Retry one bounded 0B download first at each source checkpoint; also retry the 0D live
-acquisition command when the BCB services recover:
+Add one manual, hard-gated official-sample workflow that catalogs, downloads,
+profiles, lands, builds dbt and executes `official_end_to_end` on PostgreSQL 18. It
+must retain failure evidence but never continue a partial load. Retry one bounded 0B
+download first at each source checkpoint; also retry the 0D live acquisition command
+when the BCB services recover:
 
 ```powershell
 uv run --locked banking-data download-cosif --start 202603 --end 202603 `
