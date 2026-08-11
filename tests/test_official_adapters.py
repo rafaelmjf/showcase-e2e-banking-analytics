@@ -1,12 +1,16 @@
 import io
+import os
 import zipfile
 from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
+from uuid import uuid4
 
 import httpx
+import psycopg
 import pytest
+from psycopg import sql
 from typer.main import get_command
 
 from banking_analytics.cli import app
@@ -16,6 +20,8 @@ from banking_analytics.pipelines.macro import (
     METADATA_COLUMNS,
     OBSERVATION_COLUMNS,
 )
+from banking_analytics.pipelines.official import run_official_pipelines
+from banking_analytics.settings import WarehouseSettings
 from banking_analytics.sources.cosif import (
     build_cosif_landing_records,
     download_catalog_files,
@@ -180,6 +186,53 @@ def test_macro_landing_rejects_any_unpassed_series() -> None:
             date(2025, 1, 1),
             date(2025, 1, 31),
         )
+
+
+@pytest.mark.skipif(
+    os.getenv("BANKING_RUN_POSTGRES_TESTS") != "1",
+    reason="isolated PostgreSQL integration test is enabled explicitly",
+)
+def test_mocked_official_evidence_loads_through_dlt(tmp_path: Path) -> None:
+    database_name = f"banking_adapter_{uuid4().hex}"
+    default_settings = WarehouseSettings()
+    admin_settings = default_settings.model_copy(update={"db": "postgres"})
+    test_settings = default_settings.model_copy(update={"db": database_name})
+    with psycopg.connect(admin_settings.dsn, autocommit=True) as connection:
+        connection.execute(sql.SQL("create database {}").format(sql.Identifier(database_name)))
+
+    try:
+        downloads, cosif_profiles = _verified_cosif(tmp_path)
+        registry, observations, macro_profiles = _verified_macro()
+        run_official_pipelines(
+            tmp_path,
+            downloads,
+            cosif_profiles,
+            registry,
+            observations,
+            macro_profiles,
+            date(2025, 1, 1),
+            date(2025, 1, 31),
+            test_settings,
+        )
+        with psycopg.connect(test_settings.dsn) as connection:
+            counts = connection.execute(
+                """
+                select
+                    (select count(*) from raw_cosif.cosif_file_manifest),
+                    (select count(*) from raw_cosif.cosif_balance_row),
+                    (select count(*) from raw_macro.sgs_series_metadata),
+                    (select count(*) from raw_macro.sgs_observation),
+                    (select count(*) from raw_macro.sgs_fetch_manifest)
+                """
+            ).fetchone()
+        assert counts == (1, 2, 5, 5, 5)
+    finally:
+        with psycopg.connect(admin_settings.dsn, autocommit=True) as connection:
+            connection.execute(
+                sql.SQL("drop database {} with (force)").format(
+                    sql.Identifier(database_name)
+                )
+            )
 
 
 def test_official_load_command_is_registered() -> None:

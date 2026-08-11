@@ -26,6 +26,7 @@ jobs:
       BANKING_POSTGRES_DB: banking
       BANKING_POSTGRES_USER: banking
       BANKING_POSTGRES_PASSWORD: banking_local_only
+      BANKING_RUN_POSTGRES_TESTS: "1"
 
     services:
       warehouse:
