@@ -1,0 +1,2 @@
+github_run_id,commit_sha,dagster_run_id,raw_assets,dbt_assets,total_assets,python_tests,dbt_models,dbt_tests,dbt_nodes,status
+31446855199,2d63e4df969e19f7283ee7cfb6390ce8b02327d5,206dfd08-498f-4eb6-9315-910ad51b12aa,5,11,16,38,11,106,117,success

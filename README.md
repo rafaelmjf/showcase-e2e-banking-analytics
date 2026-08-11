@@ -27,9 +27,8 @@ reasoning is recorded in [ADR 0001](docs/adr/0001-initial-stack.md).
 ## Current status
 
 WP0 source profiling is in progress. The acquisition profilers and a fixture-backed
-dlt/PostgreSQL landing and fixture-backed dbt staging/core are implemented; no
-certified live landing, reporting marts, Dagster graph or BI model has been completed
-yet.
+dlt/PostgreSQL landing, dbt staging/core and Dagster asset graph are implemented; no
+certified live landing, reporting marts or BI model has been completed yet.
 
 - The official BCB document catalog confirms the bank-file publication inventory.
 - The MVP analytical period is January 2025 through the latest published month.
@@ -47,6 +46,9 @@ yet.
 - The fixture-backed dbt graph builds 11 staging/core models and passes 106 tests.
   Its scope and official-data boundary are documented in
   [the dbt core checkpoint](docs/checkpoints/02-fixture-dbt-core.md).
+- The fixture Dagster graph materializes five dlt raw assets and 11 dbt assets with
+  continuous lineage. Its independently reproduced boundary is documented in
+  [the Dagster checkpoint](docs/checkpoints/03-fixture-dagster.md).
 
 Start with the [implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).

@@ -6,10 +6,9 @@ Updated: 2026-08-11
 
 WP0 checkpoints 0A and 0D are complete. The official COSIF document catalog and the
 five-series macro contract are implemented, tested and preserved as repository
-evidence. A fixture-backed dlt/PostgreSQL landing is also complete; no certified live
-landing, reporting marts, Dagster assets or Power BI files have been implemented.
-Fixture-backed dbt staging and core models are complete but are not live-data
-certification.
+evidence. Fixture-backed dlt/PostgreSQL landing, dbt staging/core and a 16-asset
+Dagster graph are complete; no certified live landing, reporting marts or Power BI
+files have been implemented. Fixture success is not live-data certification.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -86,11 +85,20 @@ nodes. GitHub Actions
 reproduced 11 successful models and 106 passing tests with zero warnings, errors or
 skips. No reporting lines, top-15 population or marts have been claimed.
 
+The fixture-backed Dagster checkpoint is complete. Five physical dlt outputs and 11
+dbt models form one continuous 16-asset graph, with dbt tests emitted as asset checks.
+[GitHub Actions run 31446855199](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31446855199)
+reproduced the full job on PostgreSQL 18 in 1 minute 12 seconds: 38 Python tests,
+definition validation, dlt materialization and both 117-node dbt builds succeeded.
+See `docs/checkpoints/03-fixture-dagster.md`.
+
 ## Next action
 
-Continue with the fixture-backed Dagster asset graph while the official endpoints are
-unavailable. Retry one bounded 0B download first at each source checkpoint; also
-retry the 0D live acquisition command when the BCB services recover:
+Connect the implemented official COSIF archive and SGS API readers to the same strict
+dlt landing contracts. Keep this adapter independently testable with bounded mock
+source bodies while the official endpoints are unavailable. Retry one bounded 0B
+download first at each source checkpoint; also retry the 0D live acquisition command
+when the BCB services recover:
 
 ```powershell
 uv run --locked banking-data download-cosif --start 202603 --end 202603 `

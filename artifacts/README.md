@@ -28,3 +28,9 @@ implementation evidence, not official-source evidence.
 [GitHub Actions run 31446214745](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31446214745).
 It records the independently reproduced 11-model, 106-test build; the full dbt JSON
 artifacts remain attached to that run.
+
+`dagster_fixture_run_summary.csv` records the independently reproduced 16-asset
+fixture graph from
+[GitHub Actions run 31446855199](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31446855199),
+including the Dagster run identity and its successful 117-node dbt build. It does
+not represent a live BCB load.
