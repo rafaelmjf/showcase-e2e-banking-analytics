@@ -74,7 +74,8 @@ certified live landing, reporting marts or BI model has been completed yet.
 
 Start with the [architecture and project guide](docs/architecture.md), the
 [implementation plan](plan/README.md), the live
-[source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).
+[source-profile status](docs/source-profile.md), the [operational runbook](docs/runbook.md),
+and the latest [handover](HANDOVER.md).
 
 Public-facing framing: **Where do Brazil's largest banks get their money, where do
 they put it, and how has that changed under high interest rates?**
