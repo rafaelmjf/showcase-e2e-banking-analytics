@@ -1,12 +1,20 @@
-"""Executable fixture-backed Dagster asset graph."""
+"""Executable Dagster asset graph with explicit fixture or official inputs."""
 
+from collections.abc import Mapping
 from pathlib import Path
 
 from dagster import AssetExecutionContext, Definitions, define_asset_job
 from dagster_dbt import DbtCliResource, DbtProject, dbt_assets
 from dagster_dlt import DagsterDltResource
 
-from banking_analytics.orchestration.dlt_assets import build_fixture_dlt_assets
+from banking_analytics.orchestration.config import (
+    OfficialEvidenceConfig,
+    resolve_source_mode,
+)
+from banking_analytics.orchestration.dlt_assets import (
+    build_fixture_dlt_assets,
+    build_official_dlt_assets,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DBT_PROJECT = DbtProject(
@@ -26,14 +34,26 @@ def banking_dbt_assets(context: AssetExecutionContext, dbt: DbtCliResource):
     yield from dbt.cli(["build"], context=context).stream()
 
 
-cosif_fixture_assets, macro_fixture_assets = build_fixture_dlt_assets(PROJECT_ROOT)
-fixture_end_to_end = define_asset_job(name="fixture_end_to_end")
+def build_definitions(
+    source_mode: str | None = None,
+    environment: Mapping[str, str] | None = None,
+) -> Definitions:
+    """Build one graph with stable keys and a fail-closed selected source mode."""
+    mode = resolve_source_mode(source_mode, environment)
+    if mode == "official":
+        evidence = OfficialEvidenceConfig.from_environment(PROJECT_ROOT, environment)
+        cosif_assets, macro_assets = build_official_dlt_assets(PROJECT_ROOT, evidence)
+    else:
+        cosif_assets, macro_assets = build_fixture_dlt_assets(PROJECT_ROOT)
+    end_to_end_job = define_asset_job(name=f"{mode}_end_to_end")
+    return Definitions(
+        assets=[cosif_assets, macro_assets, banking_dbt_assets],
+        jobs=[end_to_end_job],
+        resources={
+            "dlt": DagsterDltResource(),
+            "dbt": DbtCliResource(project_dir=DBT_PROJECT),
+        },
+    )
 
-defs = Definitions(
-    assets=[cosif_fixture_assets, macro_fixture_assets, banking_dbt_assets],
-    jobs=[fixture_end_to_end],
-    resources={
-        "dlt": DagsterDltResource(),
-        "dbt": DbtCliResource(project_dir=DBT_PROJECT),
-    },
-)
+
+defs = build_definitions()

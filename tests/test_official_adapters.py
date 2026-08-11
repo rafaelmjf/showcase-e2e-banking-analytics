@@ -10,10 +10,15 @@ from uuid import uuid4
 import httpx
 import psycopg
 import pytest
+from dagster import materialize
+from dagster_dlt import DagsterDltResource
 from psycopg import sql
 from typer.main import get_command
 
 from banking_analytics.cli import app
+from banking_analytics.orchestration.config import OfficialEvidenceConfig
+from banking_analytics.orchestration.definitions import build_definitions
+from banking_analytics.orchestration.dlt_assets import build_official_dlt_assets
 from banking_analytics.pipelines.cosif import BALANCE_COLUMNS, MANIFEST_COLUMNS
 from banking_analytics.pipelines.macro import (
     FETCH_COLUMNS,
@@ -192,7 +197,9 @@ def test_macro_landing_rejects_any_unpassed_series() -> None:
     os.getenv("BANKING_RUN_POSTGRES_TESTS") != "1",
     reason="isolated PostgreSQL integration test is enabled explicitly",
 )
-def test_mocked_official_evidence_loads_through_dlt(tmp_path: Path) -> None:
+def test_mocked_official_evidence_loads_through_dlt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     database_name = f"banking_adapter_{uuid4().hex}"
     default_settings = WarehouseSettings()
     admin_settings = default_settings.model_copy(update={"db": "postgres"})
@@ -214,6 +221,44 @@ def test_mocked_official_evidence_loads_through_dlt(tmp_path: Path) -> None:
             date(2025, 1, 31),
             test_settings,
         )
+        cosif_manifest_path = tmp_path / "cosif-manifest.csv"
+        cosif_profile_path = tmp_path / "cosif-profile.csv"
+        macro_observations_path = tmp_path / "macro-observations.csv"
+        macro_profile_path = tmp_path / "macro-profile.csv"
+        write_download_manifest(downloads, cosif_manifest_path)
+        write_source_profile(cosif_profiles, cosif_profile_path)
+        write_macro_observations(observations, macro_observations_path)
+        write_macro_profile(macro_profiles, macro_profile_path)
+        evidence = OfficialEvidenceConfig(
+            cosif_manifest=cosif_manifest_path,
+            cosif_profile=cosif_profile_path,
+            macro_observations=macro_observations_path,
+            macro_profile=macro_profile_path,
+            macro_registry=Path("config/macro_series_registry.csv").resolve(),
+            macro_start_date=date(2025, 1, 1),
+            macro_end_date=date(2025, 1, 31),
+        )
+        monkeypatch.setenv("BANKING_POSTGRES_DB", database_name)
+        cosif_assets, macro_assets = build_official_dlt_assets(tmp_path, evidence)
+        result = materialize(
+            [cosif_assets, macro_assets],
+            resources={"dlt": DagsterDltResource()},
+        )
+        assert result.success
+        definitions = build_definitions(
+            environment={
+                "BANKING_SOURCE_MODE": "official",
+                "BANKING_OFFICIAL_COSIF_MANIFEST": str(cosif_manifest_path),
+                "BANKING_OFFICIAL_COSIF_PROFILE": str(cosif_profile_path),
+                "BANKING_OFFICIAL_MACRO_OBSERVATIONS": str(macro_observations_path),
+                "BANKING_OFFICIAL_MACRO_PROFILE": str(macro_profile_path),
+                "BANKING_OFFICIAL_MACRO_REGISTRY": str(evidence.macro_registry),
+                "BANKING_OFFICIAL_MACRO_START": "2025-01-01",
+                "BANKING_OFFICIAL_MACRO_END": "2025-01-31",
+            }
+        )
+        assert len(definitions.resolve_asset_graph().get_all_asset_keys()) == 16
+        assert definitions.resolve_job_def("official_end_to_end").name == "official_end_to_end"
         with psycopg.connect(test_settings.dsn) as connection:
             counts = connection.execute(
                 """
