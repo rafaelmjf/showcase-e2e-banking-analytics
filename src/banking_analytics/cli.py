@@ -22,6 +22,7 @@ from banking_analytics.pipelines.fixtures import (
     write_fixture_controls,
 )
 from banking_analytics.pipelines.official import run_official_pipelines
+from banking_analytics.readiness import assess_live_readiness, write_readiness_controls
 from banking_analytics.settings import WarehouseSettings
 from banking_analytics.sources.cosif import (
     download_catalog_files,
@@ -304,6 +305,53 @@ def load_official(
         raise typer.Exit(code=1) from exc
     typer.echo(f"COSIF load: {cosif_info}")
     typer.echo(f"Macro load: {macro_info}")
+
+
+@app.command("assess-readiness")
+def assess_readiness(
+    cosif_manifest: Annotated[Path, typer.Option("--cosif-manifest")],
+    cosif_profile: Annotated[Path, typer.Option("--cosif-profile")],
+    macro_profile: Annotated[Path, typer.Option("--macro-profile")],
+    cosif_start_period: Annotated[str, typer.Option("--cosif-start")],
+    cosif_end_period: Annotated[str, typer.Option("--cosif-end")],
+    macro_start_date: Annotated[str, typer.Option("--macro-start")],
+    macro_end_date: Annotated[str, typer.Option("--macro-end")],
+    output: Annotated[Path, typer.Option("--output")] = Path(
+        "artifacts/generated/live_readiness.csv"
+    ),
+) -> None:
+    """Publish ready/blocked controls without loading the warehouse."""
+    try:
+        parsed_macro_start = date.fromisoformat(macro_start_date)
+        parsed_macro_end = date.fromisoformat(macro_end_date)
+        downloads = read_download_manifest(cosif_manifest) if cosif_manifest.is_file() else []
+        cosif_profiles = (
+            read_source_profiles(cosif_profile) if cosif_profile.is_file() else []
+        )
+        macro_profiles = (
+            read_macro_profiles(macro_profile) if macro_profile.is_file() else []
+        )
+        controls = assess_live_readiness(
+            downloads,
+            cosif_profiles,
+            macro_profiles,
+            cosif_start_period,
+            cosif_end_period,
+            parsed_macro_start,
+            parsed_macro_end,
+        )
+    except (OSError, ValueError) as exc:
+        typer.echo(f"Readiness assessment failed: {type(exc).__name__}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    written = write_readiness_controls(controls, output)
+    ready = controls[-1].passed
+    failures = sum(not control.passed for control in controls[:-1])
+    typer.echo(
+        f"Wrote {written} readiness controls to {output}; "
+        f"status={'ready' if ready else 'blocked'}, failed_controls={failures}."
+    )
+    if not ready:
+        raise typer.Exit(code=1)
 
 
 if __name__ == "__main__":

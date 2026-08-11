@@ -117,6 +117,20 @@ jobs:
           --profile artifacts/generated/macro_profile.csv
           --attempts 3
 
+      - name: Assess bounded live readiness
+        id: readiness
+        continue-on-error: true
+        run: >-
+          uv run --locked banking-data assess-readiness
+          --cosif-manifest artifacts/generated/cosif_download_manifest.csv
+          --cosif-profile artifacts/generated/cosif_source_profile.csv
+          --macro-profile artifacts/generated/macro_profile.csv
+          --cosif-start "${{ inputs.cosif_start_period }}"
+          --cosif-end "${{ inputs.cosif_end_period }}"
+          --macro-start "${{ inputs.macro_start_date }}"
+          --macro-end "${{ inputs.macro_end_date }}"
+          --output artifacts/generated/live_readiness.csv
+
       - name: Enforce complete acquisition gate
         id: acquisition_gate
         run: |
@@ -124,6 +138,7 @@ jobs:
           test "${{ steps.cosif_download.outcome }}" = "success"
           test "${{ steps.cosif_profile.outcome }}" = "success"
           test "${{ steps.macro_profile.outcome }}" = "success"
+          test "${{ steps.readiness.outcome }}" = "success"
 
       - name: Load verified official evidence
         run: >-
