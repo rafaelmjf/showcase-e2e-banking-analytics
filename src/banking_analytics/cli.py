@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Annotated
 
 import httpx
+import psycopg
 import typer
 
 from banking_analytics.bcb.cosif import (
@@ -15,6 +16,12 @@ from banking_analytics.bcb.cosif import (
     write_source_catalog,
     write_source_inventory,
 )
+from banking_analytics.pipelines.fixtures import (
+    run_fixture_pipelines,
+    verify_fixture_landing,
+    write_fixture_controls,
+)
+from banking_analytics.settings import WarehouseSettings
 from banking_analytics.sources.cosif import (
     download_catalog_files,
     profile_downloads,
@@ -222,6 +229,40 @@ def profile_sgs(
         f"Wrote {observation_count} observations and {profile_count} profiles; "
         f"complete={profile_count - len(failures)}, failures={len(failures)}."
     )
+    if failures:
+        raise typer.Exit(code=1)
+
+
+@app.command("load-fixtures")
+def load_fixtures(
+    project_root: Annotated[Path, typer.Option("--project-root")] = Path("."),
+) -> None:
+    """Load synthetic COSIF and macro contracts into local PostgreSQL via dlt."""
+    try:
+        settings = WarehouseSettings()
+        cosif_info, macro_info = run_fixture_pipelines(project_root.resolve(), settings)
+    except Exception as exc:
+        typer.echo(f"Fixture load failed: {type(exc).__name__}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    typer.echo(f"COSIF load: {cosif_info}")
+    typer.echo(f"Macro load: {macro_info}")
+
+
+@app.command("verify-fixtures")
+def verify_fixtures(
+    output: Annotated[Path, typer.Option("--output")] = Path(
+        "artifacts/generated/fixture_landing_evidence.csv"
+    ),
+) -> None:
+    """Verify fixture landing row identities and accounting reconciliation."""
+    try:
+        controls = verify_fixture_landing(WarehouseSettings())
+    except (OSError, psycopg.Error) as exc:
+        typer.echo(f"Fixture verification failed: {type(exc).__name__}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
+    written = write_fixture_controls(controls, output)
+    failures = [control for control in controls if not control.passed]
+    typer.echo(f"Wrote {written} controls to {output}; failures={len(failures)}.")
     if failures:
         raise typer.Exit(code=1)
 
