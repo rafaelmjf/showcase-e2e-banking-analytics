@@ -7,7 +7,9 @@ Updated: 2026-08-11
 WP0 checkpoints 0A and 0D are complete. The official COSIF document catalog and the
 five-series macro contract are implemented, tested and preserved as repository
 evidence. A fixture-backed dlt/PostgreSQL landing is also complete; no certified live
-landing, dbt models, Dagster assets or Power BI files have been implemented.
+landing, reporting marts, Dagster assets or Power BI files have been implemented.
+Fixture-backed dbt staging and core models are complete but are not live-data
+certification.
 
 The chosen stack remains dlt + PostgreSQL + dbt + Dagster + Power BI. The MVP is now
 deliberately focused on individual bank files from January 2025 onward, a stable top-15
@@ -76,10 +78,18 @@ repeated the test on PostgreSQL 18: Ruff and 37 tests passed, both sources loade
 twice, and all 11 database controls passed. The evidence is committed at
 `artifacts/fixture_landing_evidence.csv`. This does not certify WP2/WP3 live loads.
 
+The fixture-backed dbt staging/core checkpoint is also complete. Eleven table models
+preserve source evidence, select one complete file version per period and publish
+bank/account plus macro canonical objects. The final local build passed all 117
+nodes. GitHub Actions
+[run 31446214745](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31446214745)
+reproduced 11 successful models and 106 passing tests with zero warnings, errors or
+skips. No reporting lines, top-15 population or marts have been claimed.
+
 ## Next action
 
-Continue with fixture-backed dbt staging/core controls while the official endpoints
-are unavailable. Retry one bounded 0B download first at each source checkpoint; also
+Continue with the fixture-backed Dagster asset graph while the official endpoints are
+unavailable. Retry one bounded 0B download first at each source checkpoint; also
 retry the 0D live acquisition command when the BCB services recover:
 
 ```powershell

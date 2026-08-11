@@ -23,3 +23,8 @@ not mean that files are absent.
 [GitHub Actions run 31445840964](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31445840964).
 It verifies repeat-load identities and the synthetic accounting reconciliation. It is
 implementation evidence, not official-source evidence.
+
+`dbt_fixture_build_summary.csv` is derived from `run_results.json` in
+[GitHub Actions run 31446214745](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31446214745).
+It records the independently reproduced 11-model, 106-test build; the full dbt JSON
+artifacts remain attached to that run.
