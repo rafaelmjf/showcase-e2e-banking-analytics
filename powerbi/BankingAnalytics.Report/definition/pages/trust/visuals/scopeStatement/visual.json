@@ -1,0 +1,48 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "scopeStatement",
+  "position": {
+    "x": 24,
+    "y": 568,
+    "z": 0,
+    "height": 128,
+    "width": 1232,
+    "tabOrder": 7
+  },
+  "visual": {
+    "visualType": "textbox",
+    "query": {
+      "queryState": {}
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Scope: individual bank files (not consolidated or prudential groups), January 2025 onward, and the top 15 institutions ranked at March 2026 held fixed across the period. Total assets is certified; credit, deposits and equity are governed drafts. Balances are nominal reais with no inflation adjustment. Result accounts reset in June and December, so profitability is deferred. Missing future periods follow the publication calendar and are not ingestion failures. Data is BCB open data under ODbL; project code and documentation are MIT.'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

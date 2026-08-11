@@ -1,0 +1,106 @@
+/// Bridge: the seven non-overlapping top-level COSIF accounts that define the four
+/// reporting lines under mapping version 2026-08-11-v1. A reference table for
+/// drill-through ("which accounts make up this line?"), related single-direction into
+/// the two dimensions so it never creates an ambiguous path between the facts.
+table 'Account Reporting Line'
+	lineageTag: 2b3c4d5e-0b00-4000-8000-000000000b00
+
+	column account_reporting_line_key
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 2b3c4d5e-0b01-4000-8000-000000000b01
+		summarizeBy: none
+		sourceColumn: account_reporting_line_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column account_key
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0b02-4000-8000-000000000b02
+		summarizeBy: none
+		sourceColumn: account_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column reporting_line_key
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0b03-4000-8000-000000000b03
+		summarizeBy: none
+		sourceColumn: reporting_line_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Account Code'
+		dataType: string
+		lineageTag: 2b3c4d5e-0b04-4000-8000-000000000b04
+		summarizeBy: none
+		sourceColumn: account_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Line Code'
+		dataType: string
+		lineageTag: 2b3c4d5e-0b05-4000-8000-000000000b05
+		summarizeBy: none
+		sourceColumn: reporting_line_code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Plain-language name of the mapped component.
+	column 'Component Name'
+		dataType: string
+		lineageTag: 2b3c4d5e-0b06-4000-8000-000000000b06
+		summarizeBy: none
+		sourceColumn: component_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column presentation_multiplier
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2b3c4d5e-0b07-4000-8000-000000000b07
+		summarizeBy: none
+		sourceColumn: presentation_multiplier
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mapping Version'
+		dataType: string
+		lineageTag: 2b3c4d5e-0b08-4000-8000-000000000b08
+		summarizeBy: none
+		sourceColumn: mapping_version
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status
+		dataType: string
+		lineageTag: 2b3c4d5e-0b09-4000-8000-000000000b09
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Source URL documenting the COSIF account definition.
+	column 'Source URL'
+		dataType: string
+		lineageTag: 2b3c4d5e-0b0a-4000-8000-000000000b0a
+		summarizeBy: none
+		sourceColumn: source_url
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Account Reporting Line' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(WarehouseServer, WarehouseDatabase),
+				    Data = Source{[Schema="analytics_marts",Item="bridge_account_reporting_line"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table
+

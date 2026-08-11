@@ -16,7 +16,10 @@ repeatable by a newcomer without relying on conversation history.
 - minimal COSIF and SGS availability retries;
 - a timestamped bounded acquisition that does not overwrite prior evidence;
 - readiness assessment before any warehouse mutation;
+- full-window total-assets and population certification;
+- final non-mutating source-profile decision;
 - official dlt, dbt and Dagster commands;
+- post-run official warehouse certification;
 - safe removal of source-mode environment variables;
 - manual GitHub workflow dispatch and artifact retrieval;
 - diagnosis and safe next action for eight hard gates;
@@ -24,8 +27,8 @@ repeatable by a newcomer without relying on conversation history.
 - the explicit mart-contract/BI handoff gate.
 
 Two tests compare the runbook to the actual Typer command registry and require all
-eight operational stages. They also pin readiness before `load-official` and the
-no-fallback fixture boundary.
+eleven current operational stages. They also pin readiness before `load-official`
+and the no-fallback fixture boundary.
 
 ## Verification
 
@@ -37,6 +40,6 @@ The compact committed record is `artifacts/runbook_checkpoint_summary.csv`.
 
 ## Boundary
 
-The runbook does not bypass current source gates. It makes the next official retry
-and its evidence review reproducible; it does not complete checkpoints 0B, 0C or 0E
-while BCB observation hosts return HTTP 502.
+The runbook does not bypass source gates. The original retained run demonstrates the
+HTTP-502 recovery path; later local evidence completed 0B, 0C and 0E. The official
+warehouse/dbt/Dagster certification remains an explicit gate.

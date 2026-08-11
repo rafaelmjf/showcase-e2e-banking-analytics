@@ -27,14 +27,16 @@ flowchart LR
     B["BCB SGS macro series"] --> C
     C --> D["dbt typed staging"]
     D --> E["dbt canonical core"]
-    E --> F["Governed marts (planned)"]
-    F --> G["Power BI semantic model (planned)"]
-    G --> H["Banking Pulse + Compare Banks (planned)"]
+    E --> F["Certified dimensional marts"]
+    F --> G["Power BI semantic model (TMDL)"]
+    G --> H["Banking Pulse + Compare Banks + Trust"]
 ```
 
-The current implementation stops at the canonical core. Marts, top-15 membership,
-reporting-line mappings and Power BI are deliberately withheld until the live source
-profile proves which accounts can support them.
+The current implementation reaches the consumption layer end to end. Checkpoint 12
+certifies the materialized top-15 population, four reporting lines, twelve mart objects
+and exact account-level reconciliation; checkpoint 13 adds the version-controlled Power
+BI PBIP/TMDL semantic model, sixteen governed measures and a three-page report bound
+only to that frozen contract. The MVP is complete.
 
 ## Input data
 
@@ -47,7 +49,7 @@ cross-taxonomy bridge. Important source fields are:
 | Field | Meaning in this project |
 |---|---|
 | `DATA_BASE` | Reporting month (`YYYYMM`) |
-| `DOCUMENTO` | BCB document type; the observed current bank file uses 4010 |
+| `DOCUMENTO` | BCB document type; rank monthly 4010 and retain semiannual 4016 as excluded evidence |
 | `CNPJ` / `NOME_INSTITUICAO` | Institution identity and source name |
 | `CONTA` / `NOME_CONTA` | COSIF account code and description |
 | `SALDO` | Locale-formatted balance in Brazilian reais |
@@ -81,9 +83,9 @@ causal explanations of bank performance.
 |---|---|---|
 | Acquisition | Python 3.12 + dlt | BCB files need custom ZIP/header/encoding semantics and SGS needs bounded API validation. dlt adds typed schema contracts, merge identities and load-package state without a service-heavy connector platform. |
 | Warehouse | PostgreSQL 18 | Portable, transparent SQL, sufficient for the bounded volume and directly consumable by Power BI. It also makes local/CI parity straightforward. |
-| Transformation | dbt Core + dbt-postgres | Explicit lineage, contracts, 106 current tests, generated documentation and a mature Dagster integration. |
-| Orchestration | Dagster + `dagster-dlt` + `dagster-dbt` | Models the platform as 16 observable assets. Fixture and official modes preserve identical keys, so operational source choice does not fracture lineage. |
-| Consumption | Power BI PBIP/TMDL (planned) | Matches the portfolio's BI focus and allows governed measures, version-controlled metadata and a clear mart-only boundary. |
+| Transformation | dbt Core + dbt-postgres | Explicit lineage, a frozen mart contract, 188 current tests, generated documentation and a mature Dagster integration. |
+| Orchestration | Dagster + `dagster-dlt` + `dagster-dbt` | Models the platform as 31 observable assets. Fixture and official modes preserve identical keys, so operational source choice does not fracture lineage. |
+| Consumption | Power BI PBIP/TMDL | Matches the portfolio's BI focus and allows governed measures, version-controlled metadata and a clear mart-only boundary. Implemented in checkpoint 13. |
 | Packaging/CI | uv, Docker Compose, GitHub Actions | Locked Python resolution, PostgreSQL 18 parity and independently retained evidence for every checkpoint. |
 
 ### Why no Data Vault
@@ -188,6 +190,7 @@ erDiagram
     bank_period ||--o{ account_balance : "report_month + institution_cnpj"
     cosif_account ||--o{ account_balance : "account_code"
     macro_series ||--o{ macro_observation : "series_code"
+    reporting_line_mapping }o--|| cosif_account : "account_code"
 
     cosif_file_manifest {
         text source_checksum PK
@@ -227,24 +230,72 @@ erDiagram
         decimal value
         boolean is_fixture
     }
+    reporting_line_mapping {
+        text account_code PK
+        text reporting_line_key
+        text mapping_version
+        integer presentation_multiplier
+    }
 ```
 
 `cosif_file_manifest` retains all landed versions and marks one complete version per
 period. `account_balance` only contains rows from that selected version. `bank_period`
-and `cosif_account` are current canonical entities; neither is yet the stable top-15
-population or a Type-2 history. Macro definitions and observations remain separate so
-semantic rules are governed rather than embedded in a generic value column.
+and `cosif_account` are current canonical entities. `reporting_line_mapping` promotes
+the versioned seven-account governance seed into the canonical layer. A Type-2 bank
+history is unnecessary for the unchanged 15-month names. Macro definitions and observations
+remain separate so semantic rules are governed rather than embedded in a generic
+value column.
+
+### Certified consumption marts
+
+```mermaid
+erDiagram
+    dim_bank ||--o{ fact_account_balance : bank_key
+    dim_date ||--o{ fact_account_balance : month_key
+    dim_cosif_account ||--o{ fact_account_balance : account_key
+    dim_source_file ||--o{ fact_account_balance : source_file_key
+    dim_bank ||--o{ fact_reporting_line_balance : bank_key
+    dim_date ||--o{ fact_reporting_line_balance : month_key
+    dim_reporting_line ||--o{ fact_reporting_line_balance : reporting_line_key
+    dim_source_file ||--o{ fact_reporting_line_balance : source_file_key
+    dim_cosif_account ||--o{ bridge_account_reporting_line : account_key
+    dim_reporting_line ||--o{ bridge_account_reporting_line : reporting_line_key
+    dim_macro_series ||--o{ fact_macro_observation : macro_series_key
+    dim_date ||--o{ fact_macro_observation : month_key
+    dim_macro_series ||--o{ fact_monthly_economic_context : macro_series_key
+    dim_date ||--o{ fact_monthly_economic_context : month_key
+```
+
+`dim_bank` materializes the frozen top 15; `dim_cosif_account`, `dim_reporting_line`,
+`dim_document`, `dim_macro_series`, `dim_date` and `dim_source_file` provide governed
+descriptive and provenance attributes. `bridge_account_reporting_line` preserves the
+seven exact account assignments. `fact_account_balance` supports source-account
+drill-through, `fact_reporting_line_balance` exposes four audited bank-month lines,
+`fact_macro_observation` preserves native series dates, and
+`fact_monthly_economic_context` supplies authored monthly alignment without causal
+interpretation. The full ordered schema is frozen in `contracts/mart-schema.yml`.
 
 ## Orchestration and operational gates
 
-The default `fixture_end_to_end` job materializes all five raw assets followed by the
-11 dbt assets. `BANKING_SOURCE_MODE=official` exposes `official_end_to_end` with the
-same keys, but only when every persisted evidence path and macro bound is explicit.
+The default `fixture_end_to_end` job materializes all five raw assets followed by 24
+dbt models and two governance seeds. `BANKING_SOURCE_MODE=official` exposes
+`official_end_to_end` with the same keys, but only when every persisted evidence path
+and macro bound is explicit. The job uses deterministic in-process execution because
+multiprocess code-location imports can race while dlt initializes shared local
+pipeline schema storage on Windows.
 
 Before an official load, `assess-readiness` publishes eight source controls and one
-overall decision. The current live run is blocked because the BCB file and SGS hosts
-return HTTP 502. The workflow preserves those errors, then skips PostgreSQL, dbt and
-Dagster instead of loading partial evidence.
+overall decision. The retained CI run demonstrates the HTTP-502 failure path and
+skips PostgreSQL, dbt and Dagster instead of loading partial evidence. After service
+recovery, a full-window local retry passed all nine controls; downstream live
+execution remains a separate certification gate.
+
+Checkpoint 0E adds a second, non-mutating consolidation gate. Its 11 controls pin the
+catalog, runtime archives, COSIF/SGS profiles, fixed population, document scope and
+bounded reporting-line draft. That historical source contract led to the isolated
+warehouse certification and then the versioned mart mapping. Checkpoint 12 now
+freezes the twelve-object consumption contract after all thirteen reporting-mart
+controls passed.
 
 ## Quality strategy
 
@@ -259,16 +310,20 @@ Current automated evidence includes:
 - macro grain and continuity tests;
 - stable raw-to-dbt asset keys and executable Dagster checks;
 - machine-readable ready/blocked controls before live mutation.
+- exact seven-account reporting mapping and non-overlap controls;
+- stable 15-bank by 15-month population coverage;
+- account-level to reporting-line reconciliation and ordered contract-schema checks.
 
-The current dbt graph contains 11 models and 106 tests. Passing fixtures prove the
-mechanics and deliberate failure paths; official accounting reconciliation and
-mapping coverage remain future exit gates.
+The current dbt graph contains 24 models, two seeds and 188 tests. Both fixture and
+official builds pass `214/214`; the official mart certification additionally proves
+zero fixture rows, all 900 bank-month-line combinations and exact BRL reconciliation.
 
 ## Important observations and challenges
 
-1. **Official service availability:** the catalog is accessible, but both file and
-   SGS observation hosts currently return HTTP 502 from local and GitHub runners.
-   HTTP 5xx is unknown availability, never evidence that a period is absent.
+1. **Official service availability:** local and GitHub runners previously received
+   HTTP 502 from both source families. The services later recovered and supplied a
+   complete local profile. HTTP 5xx remains unknown availability, never evidence that
+   a period is absent.
 2. **Headers are not necessarily row one:** COSIF files include metadata lines before
    the semicolon-delimited header. Acquisition searches for the required field set
    and records the header line number.
@@ -294,15 +349,16 @@ mapping coverage remain future exit gates.
 | Capability | State |
 |---|---|
 | Official catalog and active-version resolution | Implemented and live-verified |
-| COSIF/SGS acquisition, profiling and readiness code | Implemented; live observations blocked by HTTP 502 |
+| COSIF/SGS acquisition, profiling and readiness code | Implemented; COSIF 0B and a bounded live readiness retry passed |
 | Strict dlt landing and PostgreSQL path | Fixture and mocked-official integration verified |
-| dbt staging/core/tests/docs | Implemented and fixture-verified |
-| Dagster fixture graph and official raw mode | Implemented and verified |
-| Full official Dagster + dbt run | Defined; not certified |
-| Reporting-line mapping and total-assets definition | Planned after live profile |
-| Stable top-15 population and dimensional marts | Planned after mapping approval |
-| Mart schema contract | Planned with marts |
-| Power BI TMDL, pages and trust panel | Planned after contract freeze |
+| dbt staging/core/marts/tests/docs | Implemented; fixture and official builds pass 214/214 |
+| Dagster fixture and official modes | Implemented as a stable 31-asset graph |
+| Full official Dagster + dbt run | Certified for 202501–202603; 214/214 dbt nodes and the 31-asset job passed |
+| Total-assets definition and stable top-15 population | Profiled and certified in checkpoint 0C |
+| Final source-profile decision | Complete; 11/11 controls passed |
+| Reporting-line mapping and dimensional marts | Certified under mapping version `2026-08-11-v1` |
+| Mart schema contract | Frozen for all twelve consumption objects |
+| Power BI TMDL, pages and trust panel | Implemented and verified live (checkpoint 13) |
 
 ## Where to continue
 

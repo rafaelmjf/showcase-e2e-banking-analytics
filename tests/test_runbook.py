@@ -12,8 +12,12 @@ def test_runbook_covers_every_operational_cli_stage() -> None:
         "source-catalog",
         "download-cosif",
         "profile-cosif",
+        "profile-cosif-population",
         "profile-sgs",
         "assess-readiness",
+        "assess-source-profile",
+        "certify-official-warehouse",
+        "certify-reporting-marts",
         "load-official",
         "load-fixtures",
         "verify-fixtures",
@@ -30,4 +34,4 @@ def test_runbook_orders_readiness_before_official_load() -> None:
         "banking-data load-official"
     )
     assert "never falls back to fixtures" in runbook
-    assert "Power BI may inspect" in runbook
+    assert "Power BI may bind to the certified mart contract" in runbook

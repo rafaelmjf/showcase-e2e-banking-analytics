@@ -1,0 +1,12 @@
+control_name,passed,expected_value,actual_value,detail
+catalog_active_period_coverage,True,202501|202502|202503|202504|202505|202506|202507|202508|202509|202510|202511|202512|202601|202602|202603,202501|202502|202503|202504|202505|202506|202507|202508|202509|202510|202511|202512|202601|202602|202603,Exactly one active official BANCOS catalog record is required per month.
+cosif_runtime_and_profile_ready,True,15 complete archives and valid profiles,archives=15;profiles=15,"Every selected archive needs a checksum, retained path and clean matching profile."
+macro_runtime_and_profile_ready,True,5 series and 75 observations,profiles=5;observations=75,All five official SGS series must cover the exact bounded monthly window.
+acquisition_readiness_retained,True,9/9 controls pass; bounded_official_load_ready=ready,rows=9;last=ready,The independent acquisition gate must remain fully ready.
+population_controls_retained,True,11/11 controls pass; checkpoint_0c_ready=ready,rows=11;last=ready,The certified total-assets and population controls must remain fully ready.
+population_contract_frozen,True,15 unique 4010 members ranked at 202603,rows=15;cnpjs=15;ranks=15,"Membership is a fixed CNPJ set, not a rolling monthly top-N."
+population_monthly_coverage,True,225,225,Every frozen member requires one certified monthly total-assets row.
+document_scope_disclosed,True,4010 monthly;4016=202506|202512,profiles=15;4016=202506|202512,4016 is observed only as semiannual scope evidence and is excluded analytically.
+reporting_line_draft_bounded,True,total_assets=certified;credit_portfolio|deposits|equity=draft,total_assets=certified|credit_portfolio=draft|deposits=draft|equity=draft,Unresolved reporting lines stay explicit and cannot masquerade as certified mappings.
+source_boundary_complete,True,BANCOS|base_individual|202501-202603|freeze=202603|top=15|ODbL,BANCOS|base_individual|202501-202603|freeze=202603|top=15|ODbL,The bounded MVP source decision is intentionally exact and versionable.
+checkpoint_0e_ready,True,ready_for_official_warehouse_certification,ready_for_official_warehouse_certification,This authorizes the next certification run; it does not claim that the warehouse or marts are certified.

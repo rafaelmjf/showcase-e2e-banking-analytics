@@ -34,22 +34,37 @@ The fixture tests cover successful ZIP download, exact checksum and bytes, inval
 ZIP cleanup, manifest round-trip, CP1252 metadata, dynamic four-line header parsing,
 volume counts, malformed rows and checksum tampering.
 
-## Live status
+## Live certification
 
-A bounded download of the catalog-selected 202603 file was attempted at
-2026-08-10 23:59:26 UTC. It produced a manifest error row with HTTP 502, no checksum
-and no retained partial file. The failure is correctly isolated and recoverable, but
-there is not yet an official archive body to certify.
+The BCB file service recovered on 11 August 2026. The documented full-range commands
+then downloaded and profiled every active archive from 202501 through 202603:
 
+- 15 complete manifest rows and zero errors;
+- 15,163,509 compressed bytes with 15 distinct SHA-256 identities;
+- 831,038 parsed data rows and zero malformed rows;
+- one stable 11-column schema, CP1252 encoding and semicolon delimiter;
+- header line 4 with three preceding metadata lines in every file;
+- one declared source period matching each requested period;
+- 170–176 institutions and 971–1,011 account codes per period.
+
+The official March profile confirms the earlier mirror scale exactly: 50,273 rows,
+170 institutions and 1,011 accounts. The official archive additionally supplies the
+authoritative checksum, ZIP/member sizes, metadata and generation date.
+
+June and December are the two high-volume periods. Both contain document 4010 plus
+document 4016: 52,161/36,489 rows in 202506 and 50,667/35,065 rows in 202512. The
+other 13 files contain document 4010 only. This source behavior is preserved for 0C;
+the two document types must not be combined accidentally in ranking logic.
+
+The prior failure remains useful evidence. A bounded local attempt and
 [GitHub Actions run 31444663707](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31444663707)
-then exercised a normal full GET rather than `HEAD` or a range request. The Ubuntu
-runner passed Ruff and all 26 tests, retried the catalog-selected 202603 URL three
-times, and produced the same HTTP 502 manifest state. No archive or profile was
-fabricated, and the generated manifest was retained as a run artifact.
+both received HTTP 502 and retained no partial or fabricated source body. Recovery
+therefore required no catalog or code workaround.
 
-Status: **in progress; live download blocked by the BCB file endpoint**.
+Status: **complete; the 0B exit gate passed on all 15 official archives**. The
+committed evidence is [the COSIF source profile](../../artifacts/cosif_source_profile.csv).
 
-## Development-only mirror cross-check
+## Previous development-only mirror cross-check
 
 To exercise the expected current data shape without misrepresenting it as official
 evidence, commit `190cb06963bf3b59fa3b7ec281ed3aebf2ac64b2` from
@@ -67,10 +82,10 @@ Observed in `data/bacen_balancetes_bancos.csv`:
   every row;
 - expected normalized accounting fields plus the mirror's `data_captura` field.
 
-This corroborates the expected March scale and current account-code width. It does
-not certify the official ZIP checksum, raw encoding, metadata lines, row completeness
-or source-generation date. The mirror file remains under ignored `data/work/` and is
-not committed.
+This corroborated the expected March scale and current account-code width. It did not
+certify the official ZIP checksum, raw encoding, metadata lines, row completeness or
+source-generation date. The official 0B profile now supplies those facts. The mirror
+file remains under ignored `data/work/` and is not committed.
 
 The mirror also provides a provisional accounting-identity check for later 0C work:
 
@@ -83,9 +98,10 @@ The mirror also provides a provisional accounting-identity check for later 0C wo
 - all provisional top-15 institutions had both class-1 and class-2 rows.
 
 This prevents the misleading use of `3999999009` as ordinary total assets. The
-identity and ranking remain provisional until the official archives pass 0B.
+identity and ranking remain provisional until checkpoint 0C evaluates the now
+certified official archives.
 
-## Resume commands
+## Reproduction commands
 
 ```powershell
 uv run --locked banking-data download-cosif `
@@ -101,5 +117,5 @@ uv run --locked banking-data profile-cosif `
 
 The exit gate requires 15 complete manifest rows, no download errors, no malformed
 rows, one declared period matching each requested period, stable required columns,
-and the committed schema/volume profile. Checkpoint 0C must not be certified before
-this gate passes.
+and the committed schema/volume profile. All conditions passed. Checkpoint 0C can now
+evaluate the total-assets identity and stable top-15 population.

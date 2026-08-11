@@ -60,5 +60,5 @@ uv run --locked banking-data verify-fixtures
 
 This proves fixture schemas and mechanics only. WP2 and WP3 are not complete until
 official COSIF archives and SGS observations load through these contracts. WP0 0B,
-0C and 0E remain open, and the fixture totals must never be shown as Brazilian bank
-facts.
+0C and 0E were open at this checkpoint; later source evidence completed all three.
+The fixture totals must never be shown as Brazilian bank facts.

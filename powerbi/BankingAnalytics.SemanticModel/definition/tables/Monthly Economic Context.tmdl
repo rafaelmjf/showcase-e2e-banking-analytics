@@ -1,0 +1,138 @@
+/// Monthly-aligned macro context: one row per governed series and report month (5
+/// series x 15 months = 75 rows). Values are heterogeneous across series (rates,
+/// indexes, stocks), so the macro measure is only meaningful sliced by a single
+/// series. Context only: never presented as causing bank outcomes.
+table 'Monthly Economic Context'
+	lineageTag: 2b3c4d5e-0a00-4000-8000-000000000a00
+
+	/// The macro value for the selected series and month. Because the five series use
+	/// different units and interpretation rules, this must always be shown split by
+	/// series, never aggregated across them.
+	measure 'Macro Value' = SUM ( 'Monthly Economic Context'[value] )
+		formatString: #,0.0000
+		displayFolder: Macro
+		lineageTag: 2b3c4d5e-0a50-4000-8000-000000000a50
+
+	column monthly_context_key
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 2b3c4d5e-0a01-4000-8000-000000000a01
+		summarizeBy: none
+		sourceColumn: monthly_context_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column macro_series_key
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0a02-4000-8000-000000000a02
+		summarizeBy: none
+		sourceColumn: macro_series_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2b3c4d5e-0a03-4000-8000-000000000a03
+		summarizeBy: none
+		sourceColumn: month_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column report_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0a04-4000-8000-000000000a04
+		summarizeBy: none
+		sourceColumn: report_month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column series_code
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0a05-4000-8000-000000000a05
+		summarizeBy: none
+		sourceColumn: series_code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Series display name, duplicated from the dimension for convenience on tooltips.
+	column Series
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0a06-4000-8000-000000000a06
+		summarizeBy: none
+		sourceColumn: display_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Unit
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0a07-4000-8000-000000000a07
+		summarizeBy: none
+		sourceColumn: unit
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Derived Metric'
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0a08-4000-8000-000000000a08
+		summarizeBy: none
+		sourceColumn: derived_metric
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Hidden: exposed through the 'Macro Value' measure.
+	column value
+		dataType: double
+		isHidden
+		lineageTag: 2b3c4d5e-0a09-4000-8000-000000000a09
+		summarizeBy: sum
+		sourceColumn: value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column source_observation_date
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0a0a-4000-8000-000000000a0a
+		summarizeBy: none
+		sourceColumn: source_observation_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column is_fixture
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2b3c4d5e-0a0b-4000-8000-000000000a0b
+		summarizeBy: none
+		sourceColumn: is_fixture
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Monthly Economic Context' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(WarehouseServer, WarehouseDatabase),
+				    Data = Source{[Schema="analytics_marts",Item="fact_monthly_economic_context"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table
+

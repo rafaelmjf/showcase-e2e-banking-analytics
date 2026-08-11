@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 from pathlib import Path
 
-from dagster import AssetExecutionContext, Definitions, define_asset_job
+from dagster import AssetExecutionContext, Definitions, define_asset_job, in_process_executor
 from dagster_dbt import DbtCliResource, DbtProject, dbt_assets
 from dagster_dlt import DagsterDltResource
 
@@ -45,7 +45,13 @@ def build_definitions(
         cosif_assets, macro_assets = build_official_dlt_assets(PROJECT_ROOT, evidence)
     else:
         cosif_assets, macro_assets = build_fixture_dlt_assets(PROJECT_ROOT)
-    end_to_end_job = define_asset_job(name=f"{mode}_end_to_end")
+    # Both dlt multi-assets persist local pipeline state below one project directory.
+    # A deterministic in-process job prevents concurrent code-location imports from
+    # racing while dlt initializes those shared schema-storage paths on Windows.
+    end_to_end_job = define_asset_job(
+        name=f"{mode}_end_to_end",
+        executor_def=in_process_executor,
+    )
     return Definitions(
         assets=[cosif_assets, macro_assets, banking_dbt_assets],
         jobs=[end_to_end_job],

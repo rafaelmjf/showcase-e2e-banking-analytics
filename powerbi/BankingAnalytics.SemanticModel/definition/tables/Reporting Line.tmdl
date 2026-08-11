@@ -1,0 +1,84 @@
+/// The four certified public reporting lines under mapping version 2026-08-11-v1.
+/// These span different sides of the balance sheet (assets, liabilities, equity) and
+/// must never be summed together.
+table 'Reporting Line'
+	lineageTag: 2b3c4d5e-0300-4000-8000-000000000300
+
+	column reporting_line_key
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 2b3c4d5e-0301-4000-8000-000000000301
+		summarizeBy: none
+		sourceColumn: reporting_line_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Stable code: total_assets, credit_portfolio, deposits, equity.
+	column 'Line Code'
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0302-4000-8000-000000000302
+		summarizeBy: none
+		sourceColumn: reporting_line_code
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Display name shown on visuals: Total assets, Credit portfolio, Deposits, Equity.
+	column 'Reporting Line'
+		dataType: string
+		lineageTag: 2b3c4d5e-0303-4000-8000-000000000303
+		summarizeBy: none
+		sourceColumn: reporting_line_name
+		sortByColumn: 'Display Order'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Display Order'
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b3c4d5e-0304-4000-8000-000000000304
+		summarizeBy: none
+		sourceColumn: display_order
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Sign convention applied to the reported sum. Currently 1 for every line.
+	column presentation_multiplier
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2b3c4d5e-0305-4000-8000-000000000305
+		summarizeBy: none
+		sourceColumn: presentation_multiplier
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Frozen mapping version. Shown on the Trust page.
+	column 'Mapping Version'
+		dataType: string
+		lineageTag: 2b3c4d5e-0306-4000-8000-000000000306
+		summarizeBy: none
+		sourceColumn: mapping_version
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status
+		dataType: string
+		lineageTag: 2b3c4d5e-0307-4000-8000-000000000307
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Reporting Line' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(WarehouseServer, WarehouseDatabase),
+				    Data = Source{[Schema="analytics_marts",Item="dim_reporting_line"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table
+

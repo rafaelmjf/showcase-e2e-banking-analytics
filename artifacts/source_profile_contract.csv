@@ -1,0 +1,17 @@
+contract_key,contract_value,status,detail
+source_period_start,202501,frozen,First MVP source month.
+source_period_end,202603,frozen,Last MVP source month.
+cosif_segment,BANCOS,frozen,Official BCB bank archive segment.
+source_scope,base_individual,frozen,Individual institution CNPJ grain.
+landing_documents,4010|4016,frozen,Preserve both source documents at landing.
+analytical_document,4010,frozen,Monthly ranking and trend document.
+total_assets_formula,1000000009 + 2000000008,certified,Class 3 compensation balances are excluded.
+population_freeze_period,202603,frozen,Latest complete source month.
+population_size,15,frozen,Stable comparison set.
+macro_codes,4189|433|24363|20539|21082,frozen,Five official monthly SGS series.
+macro_window,202501|202603,frozen,Exact monthly macro window.
+reporting_lines,total_assets=certified|credit_portfolio=draft|deposits=draft|equity=draft,bounded,Draft lines require Phase 1 reconciliation before mart certification.
+license,ODbL,frozen,Official BCB data reuse boundary.
+implementation_decision,ready_for_official_warehouse_certification,decision,Checkpoint 0E outcome.
+warehouse_status,not_certified,pending,No official PostgreSQL mutation is performed by checkpoint 0E.
+mart_status,not_built,pending,Reporting-line marts remain Phase 1 work.

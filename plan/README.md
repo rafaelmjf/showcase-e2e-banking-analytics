@@ -70,7 +70,7 @@ speculatively.
 
 ## Handoff boundary
 
-The data and BI layers meet at `contracts/mart-schema.yml`. It will define every
+The data and BI layers meet at `contracts/mart-schema.yml`. It defines every
 consumption object, grain, column, type, nullability, business meaning, quality rule
 and reference row count. The BI layer must not depend on raw, staging or intermediate
 schemas.
@@ -83,12 +83,25 @@ schemas.
    report period.
 4. Report: two pages plus a trust panel.
 5. Stack: dlt, PostgreSQL, dbt, Dagster and Power BI.
+6. Ranking document: monthly individual document 4010; semiannual 4016 is retained
+   but excluded from ranking and monthly trends.
+7. Total assets: `1000000009 + 2000000008`, with compensation class 3 excluded and
+   total-general used only as a reference check.
+8. Population freeze: the 202603 top 15 by that measure, held stable for all 15 MVP
+   months. CNPJ and source name coverage are stable, so no Type-2 bank dimension is
+   required for the MVP window.
+9. Reporting mapping version `2026-08-11-v1`: total assets uses `1000000009` and
+   `2000000008`; credit uses top-level accounts `1600000007`, `1700000000` and
+   `1810000000`; deposits uses `4100000009`; equity uses `6000000004`.
+10. Consumption boundary: twelve certified objects in `analytics_marts`, with the
+    complete ordered schema frozen in `contracts/mart-schema.yml`.
 
 ## Decisions still requiring profiling
 
-1. Which current-standard COSIF accounts safely define the small set of public
-   reporting lines.
-2. Whether all months from January 2025 are comparable within the current standard.
-3. The exact monthly macro series and aggregation rules.
-4. Whether institution name/CNPJ history needs a Type-2 dimension within the short
-   MVP period.
+None for the MVP data layer. Any new source, population rule or reporting line is a
+new contract version rather than an implicit extension.
+
+Checkpoint 12 freezes the authored reporting-line mapping and reconciled dimensional
+marts after a `214/214` official dbt build and successful 31-asset Dagster run. The
+next implementation gate is the Power BI PBIP/TMDL semantic model bound only to the
+mart contract.

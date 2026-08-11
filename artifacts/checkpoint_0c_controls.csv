@@ -1,0 +1,12 @@
+control_name,passed,expected_value,actual_value,detail
+freeze_period_is_latest,True,202603,202603,Membership is frozen from the latest complete official period.
+document_scope_is_individual_4010,True,rank 4010; observe 4016 only at semester-end,documents=4010|4016;4016_periods=202506|202512,4016 is a semiannual duplicate position and is excluded from ranking and trends.
+asset_account_contract,True,1000000009:Ativo Realizável|2000000008:Ativo Permanente|3000000007:Compensação Ativa|3999999009:TOTAL GERAL DO ATIVO,1000000009:Ativo Realizável|2000000008:Ativo Permanente|3000000007:Compensação Ativa|3999999009:TOTAL GERAL DO ATIVO,Total assets are reported class 1 plus class 2; class 3 is excluded.
+relevant_account_rows_are_unique,True,duplicate_keys=0;blank_cnpj_rows=0,duplicate_keys=0;blank_cnpj_rows=0,"The relevant top-level balances must have one row per period, document and CNPJ."
+population_size,True,15,15,The authored comparison set is selected once from the freeze-period ranking.
+cutoff_is_unambiguous,True,positive rank-15 minus rank-16 gap,21929834991.30,A tie at the cutoff would require an authored tie-break decision.
+stable_population_period_coverage,True,225,225,Every frozen member must be present in every MVP month.
+top_population_components_are_explicit,True,225,225,"Although zero-balance accounts may be omitted, both components are explicit for the top 15."
+top_population_names_are_stable,True,15,15,CNPJ is the membership key; stable names avoid a Type-2 requirement in the MVP window.
+top_population_reference_reconciliation,True,all available checks within BRL 1.00,190/190;max=0.51,Reference check: class 1 + class 2 equals total-general less class 3 where total-general is published.
+checkpoint_0c_ready,True,ready,ready,"All preceding mapping, scope, coverage, cutoff and reconciliation controls must pass."

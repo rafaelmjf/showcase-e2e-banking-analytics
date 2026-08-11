@@ -1,0 +1,10 @@
+scope,control_name,status,expected_value,actual_value,detail
+cosif,manifest_period_coverage,pass,202501|202502|202503|202504|202505|202506|202507|202508|202509|202510|202511|202512|202601|202602|202603,202501|202502|202503|202504|202505|202506|202507|202508|202509|202510|202511|202512|202601|202602|202603,
+cosif,all_downloads_complete,pass,15,15,
+cosif,profile_matches_complete_downloads,pass,one profile per complete checksum,profiles=15;checksums=15,
+cosif,all_profiles_valid,pass,15,15,"Requires rows, zero malformed rows, matching DATA_BASE and generation date."
+macro,exact_series_coverage,pass,433|4189|20539|21082|24363,433|4189|20539|21082|24363,
+macro,all_series_complete,pass,5,5,
+macro,requested_window_matches,pass,202501|202603,5,Actual value is the number of profiles matching both requested bounds.
+macro,all_series_have_observations,pass,5,5,
+overall,bounded_official_load_ready,pass,ready,ready,All preceding controls must pass.

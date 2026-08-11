@@ -1,0 +1,19 @@
+version: 2
+
+seeds:
+  - name: reporting_line_mapping_seed
+    description: Versioned reviewed top-level COSIF account-to-reporting-line mapping.
+    columns:
+      - {name: account_code, data_tests: [not_null, unique]}
+      - {name: reporting_line_key, data_tests: [not_null]}
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments: {values: [certified]}
+
+  - name: top15_population_seed
+    description: Frozen 202603 official comparison population from checkpoint 0C.
+    columns:
+      - {name: institution_cnpj, data_tests: [not_null, unique]}
+      - {name: freeze_rank, data_tests: [not_null, unique]}
+      - {name: freeze_period, data_tests: [not_null]}

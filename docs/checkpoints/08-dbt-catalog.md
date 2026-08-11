@@ -53,4 +53,5 @@ The compact committed record is `artifacts/dbt_catalog_checkpoint_summary.csv`.
 
 This documents only the implemented landing, staging and canonical core. There are
 no exposures, marts, reporting-line mappings or Power BI consumption objects to
-document yet. Those remain blocked by the live 0B/0C evidence gates.
+document yet. Later evidence completed 0B, 0C and 0E; official warehouse
+certification remains before the consumption layer.

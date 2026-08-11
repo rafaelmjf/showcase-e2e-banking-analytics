@@ -50,7 +50,8 @@ The compact committed record is
 
 ## Boundary
 
-This is an executable readiness decision, not source certification. It correctly
-keeps checkpoints 0B, 0C and 0E open. A future `ready` result is necessary but not by
-itself sufficient for reporting-line approval: the resulting live profile and total-
-assets mapping must still be reviewed and documented.
+This is an executable readiness decision, not source certification. At this retained
+run it correctly kept checkpoints 0B, 0C and 0E open. Later local evidence completed
+all three checkpoints; the official warehouse certification remains separate.
+The `ready` acquisition result remains necessary but not by itself sufficient for
+reporting-line approval or official warehouse certification.

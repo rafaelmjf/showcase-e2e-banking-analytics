@@ -67,8 +67,11 @@ monthly percentage. The exact reporting treatment above is an authored semantic
 decision, not source metadata.
 
 Status: **complete for checkpoint 0D's metadata and alignment exit gate**. Live
-observation acquisition remains blocked and must pass before WP3 macro ingestion is
-certified.
+observation acquisition recovered on 11 August 2026: a bounded 202501–202603 local
+retry returned 75 observations, five complete profiles and no gaps or duplicates.
+WP3 ingestion is still uncertified until those inputs pass the official warehouse,
+dbt and Dagster route. The committed completeness evidence is
+[`macro_source_profile.csv`](../../artifacts/macro_source_profile.csv).
 
 ## Resume command
 

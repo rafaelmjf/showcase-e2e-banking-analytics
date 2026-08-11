@@ -1,0 +1,106 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "tableMapping",
+  "position": {
+    "x": 804,
+    "y": 240,
+    "z": 0,
+    "height": 316,
+    "width": 452,
+    "tabOrder": 6
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Account Reporting Line"
+                    }
+                  },
+                  "Property": "Line Code"
+                }
+              },
+              "queryRef": "Account Reporting Line.Line Code",
+              "nativeQueryRef": "Line Code"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Account Reporting Line"
+                    }
+                  },
+                  "Property": "Account Code"
+                }
+              },
+              "queryRef": "Account Reporting Line.Account Code",
+              "nativeQueryRef": "Account Code"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Account Reporting Line"
+                    }
+                  },
+                  "Property": "Component Name"
+                }
+              },
+              "queryRef": "Account Reporting Line.Component Name",
+              "nativeQueryRef": "Component Name"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Account Reporting Line"
+                  }
+                },
+                "Property": "Account Code"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Reporting-line mapping (2026-08-11-v1)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

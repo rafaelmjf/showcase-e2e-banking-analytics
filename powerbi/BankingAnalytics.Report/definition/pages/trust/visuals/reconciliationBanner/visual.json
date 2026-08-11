@@ -1,0 +1,48 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "reconciliationBanner",
+  "position": {
+    "x": 24,
+    "y": 172,
+    "z": 0,
+    "height": 56,
+    "width": 1232,
+    "tabOrder": 4
+  },
+  "visual": {
+    "visualType": "textbox",
+    "query": {
+      "queryState": {}
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Reconciliation: reporting-line balances reproduce the mapped source-account sums at BRL 0.00, and total assets reconcile to the certified checkpoint 0C evidence at BRL 0.00. Mapping version 2026-08-11-v1, certified 2026-08-11 (see reporting_mart_certification.csv). The warehouse does not re-reconcile on refresh; this is the certification-time result.'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -17,6 +17,74 @@ The catalog is the authoritative publication inventory. The direct inventory is 
 time-bound accessibility check; blank `available` values accompanied by HTTP 502 do
 not mean that files are absent.
 
+## Checkpoint 0B
+
+`cosif_source_profile.csv` is the committed schema/volume evidence generated locally
+from all 15 active official archives on 2026-08-11 UTC after the BCB file service
+recovered. It records source URLs, archive/member bytes, SHA-256 identities, parsing
+contracts and per-period counts without committing the source bodies. All 831,038
+rows parsed under one schema, every period matched and malformed rows were zero.
+Its SHA-256 is
+`E636D87602CCF3599499992855BB48FBA521DBF204A0A7DBC0CC1F78AE5B0684`.
+
+The same full-window retry produced `macro_source_profile.csv` and
+`live_readiness_full_202501_202603.csv`. The macro profile records five complete
+15-observation series with no gaps or duplicates; the readiness file records nine
+passing controls and an overall `ready` result. Their SHA-256 values are
+`25286F3522F843F5E1F49C1A55264D549E308E43C9209DA9B31471D84FF072AE` and
+`5B378797EDC1DA24EB5A381007FD049543E837B30AE7CD7C5383A86EF5DF8E4A`.
+
+## Checkpoint 0C
+
+The total-assets and stable-population profiler preserves four compact produced-work
+artifacts while the official source archives remain excluded:
+
+| File | Rows | Purpose | SHA-256 |
+|---|---:|---|---|
+| `checkpoint_0c_controls.csv` | 11 | Scope, account, coverage, cutoff and reconciliation gate | `339229632B53B80864E4EF759603726636E2F9C76D619F0D959C6873DCD09874` |
+| `top15_population.csv` | 15 | Frozen 202603 membership and latest-period ranking evidence | `0E566BB1D12FB4DFAA83D50F788E91B9F47EBCE15ECA7C714C6090365AF490AB` |
+| `top15_total_assets_by_month.csv` | 225 | Stable member/month total-assets values and source checksums | `23FF9578373D503303BBC97825E94231905B061908294513D518918523F3FAF7` |
+| `total_assets_period_profile.csv` | 15 | Whole-source account coverage and reference outlier disclosure | `F934ADDA4465FFD17304B3ECA4C667B93DA6A6855C6E58DB0990FD4C590B1D31` |
+
+The overall gate is `ready`. The selected population has complete 15-month coverage;
+the separate period profile prevents top-15 success from hiding reference-total
+outliers elsewhere in the source population.
+
+## Checkpoint 0E
+
+The final source-profile assessment combines the retained 0A–0D evidence without
+mutating PostgreSQL:
+
+| File | Rows | Purpose | SHA-256 |
+|---|---:|---|---|
+| `checkpoint_0e_controls.csv` | 11 | Fail-closed final source-profile gate | `C4E3919F94912FE4CA840C85D8C9966D203492ABA1A36FFEB5CFF7326D63BB08` |
+| `source_profile_contract.csv` | 16 | Frozen official-load boundary and explicit pending states | `A7DE7691BFBB6CB23567050140F6448E2B53F7D9D4E7311CF6FAC617A99CAC76` |
+
+All controls passed and the implementation decision is
+`ready_for_official_warehouse_certification`. The contract explicitly preserves
+`warehouse_status=not_certified`, `mart_status=not_built`, and draft status for
+credit, deposits and equity.
+
+## Official warehouse certification
+
+`official_warehouse_certification.csv` is the 11-control result from isolated
+database `banking_official_202501_202603`. It records exact raw/core counts, zero
+fixture rows, two successful identity-stable dlt passes, 117 successful dbt results,
+225/225 exact total-assets reconciliations and successful Dagster run
+`69dd1ce1-74e9-4ebb-85b5-af7c3fa155c0`. Its SHA-256 is
+`C1D9651C791BA2755A94245D60096E89743D375E0B6F6A8751FF84711DF09369`.
+
+## Reporting-mart certification
+
+`reporting_mart_certification.csv` is the 13-control result from the expanded
+official graph in isolated database `banking_official_202501_202603`. It records the
+exact twelve-object mart counts, frozen seven-account mapping, zero fixture rows,
+complete 15-bank × 15-month × four-line coverage, exact source-account and checkpoint
+0C reconciliations, `214/214` dbt results, ordered schema equality with
+`contracts/mart-schema.yml`, and successful Dagster run
+`8dff5096-2d50-418c-a8a7-8758c7ed63f4`. Its SHA-256 is
+`DDA79FF2303743070F94910730CA3A967AFB4B8377DA601608EA03311A43F5EE`.
+
 ## Fixture landing foundation
 
 `fixture_landing_evidence.csv` is the 11-control output from
@@ -66,7 +134,7 @@ all 16 implemented data assets to the newcomer-facing architecture guide. It als
 records the successful dbt and Dagster evidence from
 [run 31449192239](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31449192239).
 
-`runbook_checkpoint_summary.csv` records the clean run that verifies all eight
+`runbook_checkpoint_summary.csv` records the clean run that originally verified all eight
 operational CLI stages and eight diagnostic gates are represented in the recovery
 runbook. [Run 31449393897](https://github.com/rafaelmjf/showcase-e2e-banking-analytics/actions/runs/31449393897)
 also preserves the associated dbt and Dagster regression evidence.

@@ -1,0 +1,236 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "tableMix",
+  "position": {
+    "x": 24,
+    "y": 490,
+    "z": 0,
+    "height": 206,
+    "width": 1232,
+    "tabOrder": 10
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Bank"
+                    }
+                  },
+                  "Property": "Bank Name"
+                }
+              },
+              "queryRef": "Bank.Bank Name",
+              "nativeQueryRef": "Bank Name"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Reporting Line Balance"
+                    }
+                  },
+                  "Property": "Total Assets"
+                }
+              },
+              "queryRef": "Reporting Line Balance.Total Assets",
+              "nativeQueryRef": "Total Assets"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Reporting Line Balance"
+                    }
+                  },
+                  "Property": "Total Assets MoM Growth"
+                }
+              },
+              "queryRef": "Reporting Line Balance.Total Assets MoM Growth",
+              "nativeQueryRef": "Total Assets MoM Growth"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Reporting Line Balance"
+                    }
+                  },
+                  "Property": "Credit Share of Assets"
+                }
+              },
+              "queryRef": "Reporting Line Balance.Credit Share of Assets",
+              "nativeQueryRef": "Credit Share of Assets"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Reporting Line Balance"
+                    }
+                  },
+                  "Property": "Deposit Funding Share"
+                }
+              },
+              "queryRef": "Reporting Line Balance.Deposit Funding Share",
+              "nativeQueryRef": "Deposit Funding Share"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Reporting Line Balance"
+                    }
+                  },
+                  "Property": "Equity-to-Assets"
+                }
+              },
+              "queryRef": "Reporting Line Balance.Equity-to-Assets",
+              "nativeQueryRef": "Equity-to-Assets"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Reporting Line Balance"
+                  }
+                },
+                "Property": "Total Assets"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Asset and funding mix by bank'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "28738ef001bc31ba0b93",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Bank"
+              }
+            },
+            "Property": "Bank Name"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "8c098a13c0bbede265ea",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Reporting Line Balance"
+              }
+            },
+            "Property": "Total Assets"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "047b5410a131b1d05cb8",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Reporting Line Balance"
+              }
+            },
+            "Property": "Credit Share of Assets"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "c12476f7497354eb60db",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Reporting Line Balance"
+              }
+            },
+            "Property": "Deposit Funding Share"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "05626784aeb1254d3180",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Reporting Line Balance"
+              }
+            },
+            "Property": "Equity-to-Assets"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "6775ca5107b2b9be784a",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Reporting Line Balance"
+              }
+            },
+            "Property": "Total Assets MoM Growth"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

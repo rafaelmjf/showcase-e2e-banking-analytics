@@ -1,0 +1,102 @@
+/// One row per observed reporting month, 202501 through 202603 (15 contiguous
+/// months). Marked as the model date table on the Month column. Monthly grain:
+/// month-over-month and year-over-year measures use MONTH time intelligence.
+table Date
+	lineageTag: 2b3c4d5e-0100-4000-8000-000000000100
+	dataCategory: Time
+
+	column month_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2b3c4d5e-0101-4000-8000-000000000101
+		summarizeBy: none
+		sourceColumn: month_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// First day of the reporting month. The column the date table is marked on.
+	column Month
+		dataType: dateTime
+		isKey
+		formatString: mmm yyyy
+		lineageTag: 2b3c4d5e-0102-4000-8000-000000000102
+		summarizeBy: none
+		sourceColumn: month_start
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b3c4d5e-0103-4000-8000-000000000103
+		summarizeBy: none
+		sourceColumn: calendar_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quarter
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b3c4d5e-0104-4000-8000-000000000104
+		summarizeBy: none
+		sourceColumn: calendar_quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Number'
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b3c4d5e-0105-4000-8000-000000000105
+		summarizeBy: none
+		sourceColumn: calendar_month
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Short month label such as "Jan 2025", for axis labels. Sort by Month.
+	column 'Month Label'
+		dataType: string
+		lineageTag: 2b3c4d5e-0106-4000-8000-000000000106
+		summarizeBy: none
+		sourceColumn: month_label
+		sortByColumn: month_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column quarter_start
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0107-4000-8000-000000000107
+		summarizeBy: none
+		sourceColumn: quarter_start
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column year_start
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0108-4000-8000-000000000108
+		summarizeBy: none
+		sourceColumn: year_start
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition Date = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(WarehouseServer, WarehouseDatabase),
+				    Data = Source{[Schema="analytics_marts",Item="dim_date"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table
+

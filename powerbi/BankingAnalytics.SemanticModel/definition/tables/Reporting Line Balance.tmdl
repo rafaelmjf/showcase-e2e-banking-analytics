@@ -1,0 +1,273 @@
+/// The primary fact: one row per bank, month and reporting line (15 banks x 15
+/// months x 4 lines = 900 rows). Balances are the sum of the mapped top-level COSIF
+/// accounts, in nominal Brazilian reais. All model measures live here.
+table 'Reporting Line Balance'
+	lineageTag: 2b3c4d5e-0800-4000-8000-000000000800
+
+	/// Total assets: the certified current-standard total-assets line (COSIF 1 + 2).
+	/// Semi-additive: a balance is a stock, so across a date range this returns the
+	/// latest month present (a closing balance), never the sum of the months.
+	measure 'Total Assets' =
+			CALCULATE (
+			    SUM ( 'Reporting Line Balance'[presentation_balance_amount] ),
+			    KEEPFILTERS ( 'Reporting Line'[Line Code] = "total_assets" ),
+			    LASTNONBLANK ( 'Date'[Month], CALCULATE ( COUNTROWS ( 'Reporting Line Balance' ) ) )
+			)
+		formatString: "R$"#,0;-"R$"#,0
+		displayFolder: 1 Balances
+		lineageTag: 2b3c4d5e-0850-4000-8000-000000000850
+
+	/// Credit portfolio: governed credit, leasing and other credit-granting accounts.
+	measure 'Credit Portfolio' =
+			CALCULATE (
+			    SUM ( 'Reporting Line Balance'[presentation_balance_amount] ),
+			    KEEPFILTERS ( 'Reporting Line'[Line Code] = "credit_portfolio" ),
+			    LASTNONBLANK ( 'Date'[Month], CALCULATE ( COUNTROWS ( 'Reporting Line Balance' ) ) )
+			)
+		formatString: "R$"#,0;-"R$"#,0
+		displayFolder: 1 Balances
+		lineageTag: 2b3c4d5e-0851-4000-8000-000000000851
+
+	/// Deposits: governed deposit accounts (COSIF 4.1). A funding liability.
+	measure Deposits =
+			CALCULATE (
+			    SUM ( 'Reporting Line Balance'[presentation_balance_amount] ),
+			    KEEPFILTERS ( 'Reporting Line'[Line Code] = "deposits" ),
+			    LASTNONBLANK ( 'Date'[Month], CALCULATE ( COUNTROWS ( 'Reporting Line Balance' ) ) )
+			)
+		formatString: "R$"#,0;-"R$"#,0
+		displayFolder: 1 Balances
+		lineageTag: 2b3c4d5e-0852-4000-8000-000000000852
+
+	/// Equity: the published equity line (COSIF class 6).
+	measure Equity =
+			CALCULATE (
+			    SUM ( 'Reporting Line Balance'[presentation_balance_amount] ),
+			    KEEPFILTERS ( 'Reporting Line'[Line Code] = "equity" ),
+			    LASTNONBLANK ( 'Date'[Month], CALCULATE ( COUNTROWS ( 'Reporting Line Balance' ) ) )
+			)
+		formatString: "R$"#,0;-"R$"#,0
+		displayFolder: 1 Balances
+		lineageTag: 2b3c4d5e-0853-4000-8000-000000000853
+
+	/// Credit portfolio as a share of total assets. How much of the balance sheet is
+	/// deployed as lending.
+	measure 'Credit Share of Assets' = DIVIDE ( [Credit Portfolio], [Total Assets] )
+		formatString: 0.0%
+		displayFolder: 2 Ratios
+		lineageTag: 2b3c4d5e-0854-4000-8000-000000000854
+
+	/// Deposits as a share of total assets. A deposit-to-assets funding ratio; there is
+	/// no certified total-funding denominator, so this is not deposits over total
+	/// liabilities.
+	measure 'Deposit Funding Share' = DIVIDE ( [Deposits], [Total Assets] )
+		formatString: 0.0%
+		displayFolder: 2 Ratios
+		lineageTag: 2b3c4d5e-0855-4000-8000-000000000855
+
+	/// Equity as a share of total assets. An analytical structure measure, not a Basel
+	/// or regulatory capital ratio.
+	measure Equity-to-Assets = DIVIDE ( [Equity], [Total Assets] )
+		formatString: 0.0%
+		displayFolder: 2 Ratios
+		lineageTag: 2b3c4d5e-0856-4000-8000-000000000856
+
+	/// A bank's total assets as a share of the selected comparison population's total.
+	/// Uses ALLSELECTED so the denominator is the visible top-15 set, not one bank.
+	measure 'Comparison-Population Share' =
+			DIVIDE (
+			    [Total Assets],
+			    CALCULATE ( [Total Assets], ALLSELECTED ( Bank ) )
+			)
+		formatString: 0.0%
+		displayFolder: 2 Ratios
+		lineageTag: 2b3c4d5e-0857-4000-8000-000000000857
+
+	/// Month-over-month change in total assets. Blank for the first month (Jan 2025).
+	/// Uses EDATE rather than DATEADD because the date table is monthly-grain; DATEADD
+	/// requires a daily-contiguous date table.
+	measure 'Total Assets MoM Growth' =
+			VAR CurMonth = MAX ( 'Date'[Month] )
+			VAR PrevMonth = EDATE ( CurMonth, -1 )
+			VAR CurVal = [Total Assets]
+			VAR PriorVal = CALCULATE ( [Total Assets], FILTER ( ALL ( 'Date' ), 'Date'[Month] = PrevMonth ) )
+			RETURN DIVIDE ( CurVal - PriorVal, PriorVal )
+		formatString: 0.0%
+		displayFolder: 3 Growth
+		lineageTag: 2b3c4d5e-0858-4000-8000-000000000858
+
+	/// Year-over-year change in total assets. Defined only for Jan-Mar 2026, the only
+	/// months in the 15-month window with a prior-year comparator. Uses EDATE for the
+	/// same monthly-grain reason as the MoM measure.
+	measure 'Total Assets YoY Growth' = VAR CurMonth = MAX ( 'Date'[Month] ) VAR PrevYearMonth = EDATE ( CurMonth, -12 ) VAR CurVal = [Total Assets] VAR PriorVal = CALCULATE ( [Total Assets], FILTER ( ALL ( 'Date' ), 'Date'[Month] = PrevYearMonth ) ) RETURN DIVIDE ( CurVal - PriorVal, PriorVal )
+		formatString: 0.0%
+		displayFolder: 3 Growth
+		lineageTag: 2b3c4d5e-0859-4000-8000-000000000859
+
+	/// Median of total assets across the banks in the current selection. Used to
+	/// compare one bank against its peers.
+	measure 'Peer Median Total Assets' = MEDIANX ( VALUES ( Bank[bank_key] ), [Total Assets] )
+		formatString: "R$"#,0;-"R$"#,0
+		displayFolder: 4 Peer comparison
+		lineageTag: 2b3c4d5e-085a-4000-8000-00000000085a
+
+	column reporting_line_balance_key
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 2b3c4d5e-0801-4000-8000-000000000801
+		summarizeBy: none
+		sourceColumn: reporting_line_balance_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column bank_key
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0802-4000-8000-000000000802
+		summarizeBy: none
+		sourceColumn: bank_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2b3c4d5e-0803-4000-8000-000000000803
+		summarizeBy: none
+		sourceColumn: month_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column reporting_line_key
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0804-4000-8000-000000000804
+		summarizeBy: none
+		sourceColumn: reporting_line_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column source_file_key
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0805-4000-8000-000000000805
+		summarizeBy: none
+		sourceColumn: source_file_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column report_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0806-4000-8000-000000000806
+		summarizeBy: none
+		sourceColumn: report_month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column document_code
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0807-4000-8000-000000000807
+		summarizeBy: none
+		sourceColumn: document_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column institution_cnpj
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0808-4000-8000-000000000808
+		summarizeBy: none
+		sourceColumn: institution_cnpj
+
+		annotation SummarizationSetBy = Automatic
+
+	column reporting_line_code
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0809-4000-8000-000000000809
+		summarizeBy: none
+		sourceColumn: reporting_line_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column mapping_version
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-080a-4000-8000-00000000080a
+		summarizeBy: none
+		sourceColumn: mapping_version
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Hidden: exposed through the balance measures. Equals the reported sum times the
+	/// presentation multiplier (currently 1).
+	column presentation_balance_amount
+		dataType: double
+		isHidden
+		lineageTag: 2b3c4d5e-080b-4000-8000-00000000080b
+		summarizeBy: sum
+		sourceColumn: presentation_balance_amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// Hidden: the raw reported sum before any sign convention. Reconciliation only.
+	column reported_balance_amount
+		dataType: double
+		isHidden
+		lineageTag: 2b3c4d5e-080c-4000-8000-00000000080c
+		summarizeBy: sum
+		sourceColumn: reported_balance_amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	/// How many source accounts contributed to this reporting-line balance.
+	column 'Contributing Accounts'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 2b3c4d5e-080d-4000-8000-00000000080d
+		summarizeBy: none
+		sourceColumn: contributing_account_count
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Pipe-separated list of the source account codes that make up this line.
+	column 'Contributing Account Codes'
+		dataType: string
+		lineageTag: 2b3c4d5e-080e-4000-8000-00000000080e
+		summarizeBy: none
+		sourceColumn: contributing_account_codes
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_fixture
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2b3c4d5e-080f-4000-8000-00000000080f
+		summarizeBy: none
+		sourceColumn: is_fixture
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Reporting Line Balance' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(WarehouseServer, WarehouseDatabase),
+				    Data = Source{[Schema="analytics_marts",Item="fact_reporting_line_balance"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table
+

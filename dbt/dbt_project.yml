@@ -20,3 +20,19 @@ models:
     core:
       +schema: core
       +tags: ["fixture_ready", "core"]
+    marts:
+      +schema: marts
+      +tags: ["fixture_ready", "marts"]
+
+seeds:
+  banking_analytics:
+    +schema: governance
+    reporting_line_mapping_seed:
+      +column_types:
+        account_code: text
+        reporting_line_key: text
+        mapping_version: text
+    top15_population_seed:
+      +column_types:
+        freeze_period: text
+        institution_cnpj: text

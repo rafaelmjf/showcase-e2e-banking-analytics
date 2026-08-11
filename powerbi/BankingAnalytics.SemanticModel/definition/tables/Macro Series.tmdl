@@ -1,0 +1,136 @@
+/// The five governed BCB SGS macro series. Each carries its official title, unit and
+/// interpretation rules. Macro series are context only and must never be described as
+/// causing bank outcomes.
+table 'Macro Series'
+	lineageTag: 2b3c4d5e-0700-4000-8000-000000000700
+
+	column macro_series_key
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 2b3c4d5e-0701-4000-8000-000000000701
+		summarizeBy: none
+		sourceColumn: macro_series_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// SGS series code.
+	column 'Series Code'
+		dataType: string
+		lineageTag: 2b3c4d5e-0702-4000-8000-000000000702
+		summarizeBy: none
+		sourceColumn: series_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column Theme
+		dataType: string
+		lineageTag: 2b3c4d5e-0703-4000-8000-000000000703
+		summarizeBy: none
+		sourceColumn: theme
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Business-facing series name shown on visuals.
+	column Series
+		dataType: string
+		lineageTag: 2b3c4d5e-0704-4000-8000-000000000704
+		summarizeBy: none
+		sourceColumn: display_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Official Title'
+		dataType: string
+		lineageTag: 2b3c4d5e-0705-4000-8000-000000000705
+		summarizeBy: none
+		sourceColumn: official_title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Unit
+		dataType: string
+		lineageTag: 2b3c4d5e-0706-4000-8000-000000000706
+		summarizeBy: none
+		sourceColumn: unit
+
+		annotation SummarizationSetBy = Automatic
+
+	column Frequency
+		dataType: string
+		lineageTag: 2b3c4d5e-0707-4000-8000-000000000707
+		summarizeBy: none
+		sourceColumn: frequency
+
+		annotation SummarizationSetBy = Automatic
+
+	/// How each observation should be read (level, monthly change, stock, etc.).
+	column 'Observation Semantics'
+		dataType: string
+		lineageTag: 2b3c4d5e-0708-4000-8000-000000000708
+		summarizeBy: none
+		sourceColumn: observation_semantics
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Monthly Alignment'
+		dataType: string
+		lineageTag: 2b3c4d5e-0709-4000-8000-000000000709
+		summarizeBy: none
+		sourceColumn: monthly_alignment
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Derived Metric'
+		dataType: string
+		lineageTag: 2b3c4d5e-070a-4000-8000-00000000070a
+		summarizeBy: none
+		sourceColumn: derived_metric
+
+		annotation SummarizationSetBy = Automatic
+
+	column max_expected_lag_months
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2b3c4d5e-070b-4000-8000-00000000070b
+		summarizeBy: none
+		sourceColumn: max_expected_lag_months
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Revision Policy'
+		dataType: string
+		lineageTag: 2b3c4d5e-070c-4000-8000-00000000070c
+		summarizeBy: none
+		sourceColumn: revision_policy
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Source URL'
+		dataType: string
+		lineageTag: 2b3c4d5e-070d-4000-8000-00000000070d
+		summarizeBy: none
+		sourceColumn: source_url
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Metadata URL'
+		dataType: string
+		lineageTag: 2b3c4d5e-070e-4000-8000-00000000070e
+		summarizeBy: none
+		sourceColumn: metadata_url
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Macro Series' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(WarehouseServer, WarehouseDatabase),
+				    Data = Source{[Schema="analytics_marts",Item="dim_macro_series"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,235 @@
+contract_name: banking_reporting_marts
+contract_version: 2026-08-11-v1
+mapping_version: 2026-08-11-v1
+status: certified
+warehouse_schema: analytics_marts
+official_window: 202501-202603
+population: freeze-ranked top 15 institutions at 202603
+physical_constraints_enforced: false
+objects:
+  - name: dim_bank
+    kind: dimension
+    grain: one row per stable population institution
+    primary_key: [bank_key]
+    business_key: [institution_cnpj]
+    official_reference_rows: 15
+    columns:
+      - {name: bank_key, type: text, nullable: false}
+      - {name: institution_cnpj, type: text, nullable: false}
+      - {name: institution_name, type: text, nullable: false}
+      - {name: taxonomy, type: text, nullable: true}
+      - {name: freeze_month, type: date, nullable: false}
+      - {name: freeze_rank, type: integer, nullable: false}
+      - {name: first_report_month, type: date, nullable: false}
+      - {name: last_report_month, type: date, nullable: false}
+      - {name: is_fixture, type: boolean, nullable: false}
+    quality_rules: [unique_bank_key, unique_institution_cnpj, freeze_rank_1_to_15, official_fixture_free]
+
+  - name: dim_cosif_account
+    kind: dimension
+    grain: one row per COSIF account code observed in the selected source files
+    primary_key: [account_key]
+    business_key: [account_code]
+    official_reference_rows: 1056
+    columns:
+      - {name: account_key, type: text, nullable: false}
+      - {name: account_code, type: text, nullable: false}
+      - {name: account_name, type: text, nullable: false}
+      - {name: taxonomy, type: text, nullable: true}
+      - {name: account_class, type: text, nullable: false}
+      - {name: account_group, type: text, nullable: false}
+      - {name: is_reporting_line_component, type: boolean, nullable: false}
+      - {name: is_fixture, type: boolean, nullable: false}
+    quality_rules: [unique_account_key, unique_account_code, official_fixture_free]
+
+  - name: dim_reporting_line
+    kind: dimension
+    grain: one row per certified public reporting line and mapping version
+    primary_key: [reporting_line_key]
+    business_key: [reporting_line_code]
+    official_reference_rows: 4
+    columns:
+      - {name: reporting_line_key, type: text, nullable: false}
+      - {name: reporting_line_code, type: text, nullable: false}
+      - {name: reporting_line_name, type: text, nullable: false}
+      - {name: display_order, type: integer, nullable: false}
+      - {name: presentation_multiplier, type: integer, nullable: false}
+      - {name: mapping_version, type: text, nullable: false}
+      - {name: status, type: text, nullable: false}
+    quality_rules: [unique_reporting_line_key, four_certified_lines, mapping_version_frozen]
+
+  - name: dim_document
+    kind: dimension
+    grain: one row per governed COSIF document code
+    primary_key: [document_code]
+    official_reference_rows: 2
+    columns:
+      - {name: document_code, type: text, nullable: false}
+      - {name: document_name, type: text, nullable: false}
+      - {name: analytical_allowed, type: boolean, nullable: false}
+      - {name: source_frequency, type: text, nullable: false}
+    quality_rules: [unique_document_code, document_4010_allowed, document_4016_excluded]
+
+  - name: dim_macro_series
+    kind: dimension
+    grain: one row per governed SGS series
+    primary_key: [macro_series_key]
+    business_key: [series_code]
+    official_reference_rows: 5
+    columns:
+      - {name: macro_series_key, type: text, nullable: false}
+      - {name: series_code, type: text, nullable: false}
+      - {name: theme, type: text, nullable: false}
+      - {name: display_name, type: text, nullable: false}
+      - {name: official_title, type: text, nullable: false}
+      - {name: unit, type: text, nullable: false}
+      - {name: frequency, type: text, nullable: false}
+      - {name: observation_semantics, type: text, nullable: false}
+      - {name: monthly_alignment, type: text, nullable: false}
+      - {name: derived_metric, type: text, nullable: false}
+      - {name: max_expected_lag_months, type: bigint, nullable: false}
+      - {name: revision_policy, type: text, nullable: false}
+      - {name: source_url, type: text, nullable: false}
+      - {name: metadata_url, type: text, nullable: false}
+    quality_rules: [unique_macro_series_key, five_governed_series]
+
+  - name: dim_date
+    kind: dimension
+    grain: one row per observed calendar month
+    primary_key: [month_key]
+    business_key: [month_start]
+    official_reference_rows: 15
+    columns:
+      - {name: month_key, type: integer, nullable: false}
+      - {name: month_start, type: date, nullable: false}
+      - {name: calendar_year, type: integer, nullable: false}
+      - {name: calendar_quarter, type: integer, nullable: false}
+      - {name: calendar_month, type: integer, nullable: false}
+      - {name: month_label, type: text, nullable: false}
+      - {name: quarter_start, type: date, nullable: false}
+      - {name: year_start, type: date, nullable: false}
+    quality_rules: [unique_month_key, contiguous_202501_to_202603]
+
+  - name: dim_source_file
+    kind: dimension
+    grain: one row per selected official COSIF source checksum
+    primary_key: [source_file_key]
+    business_key: [source_checksum]
+    official_reference_rows: 15
+    columns:
+      - {name: source_file_key, type: text, nullable: false}
+      - {name: source_period, type: varchar_6, nullable: false}
+      - {name: report_month, type: date, nullable: false}
+      - {name: source_url, type: text, nullable: false}
+      - {name: source_checksum, type: text, nullable: false}
+      - {name: source_generated_at, type: date, nullable: false}
+      - {name: retrieved_at_utc, type: timestamptz, nullable: false}
+      - {name: status, type: text, nullable: false}
+      - {name: source_is_active, type: boolean, nullable: false}
+      - {name: is_selected, type: boolean, nullable: false}
+      - {name: declared_row_count, type: bigint, nullable: false}
+      - {name: is_fixture, type: boolean, nullable: false}
+      - {name: dlt_load_id, type: text, nullable: false}
+    quality_rules: [unique_source_file_key, selected_files_only, official_fixture_free]
+
+  - name: bridge_account_reporting_line
+    kind: bridge
+    grain: one row per top-level COSIF account assignment in the frozen mapping version
+    primary_key: [account_reporting_line_key]
+    business_key: [account_code]
+    official_reference_rows: 7
+    columns:
+      - {name: account_reporting_line_key, type: text, nullable: false}
+      - {name: account_key, type: text, nullable: false}
+      - {name: reporting_line_key, type: text, nullable: false}
+      - {name: account_code, type: text, nullable: false}
+      - {name: reporting_line_code, type: text, nullable: false}
+      - {name: component_name, type: text, nullable: false}
+      - {name: presentation_multiplier, type: integer, nullable: false}
+      - {name: mapping_version, type: text, nullable: false}
+      - {name: status, type: text, nullable: false}
+      - {name: source_url, type: text, nullable: false}
+    quality_rules: [seven_exact_account_assignments, no_overlapping_account_code, mapping_version_frozen]
+
+  - name: fact_account_balance
+    kind: fact
+    grain: one selected 4010 source-file row for a stable-population bank
+    primary_key: [account_balance_key]
+    official_reference_rows: 121092
+    columns:
+      - {name: account_balance_key, type: text, nullable: false}
+      - {name: bank_key, type: text, nullable: false}
+      - {name: month_key, type: integer, nullable: false}
+      - {name: account_key, type: text, nullable: false}
+      - {name: source_file_key, type: text, nullable: false}
+      - {name: report_month, type: date, nullable: false}
+      - {name: document_code, type: text, nullable: false}
+      - {name: institution_cnpj, type: text, nullable: false}
+      - {name: account_code, type: text, nullable: false}
+      - {name: account_name, type: text, nullable: false}
+      - {name: balance_amount, type: numeric_38_2, nullable: false}
+      - {name: source_checksum, type: text, nullable: false}
+      - {name: file_row_number, type: bigint, nullable: false}
+      - {name: is_fixture, type: boolean, nullable: false}
+    quality_rules: [unique_source_checksum_file_row_number, stable_population_only, document_4010_only, official_fixture_free]
+
+  - name: fact_reporting_line_balance
+    kind: fact
+    grain: one bank month document reporting line mapping version and selected source file
+    primary_key: [reporting_line_balance_key]
+    official_reference_rows: 900
+    columns:
+      - {name: reporting_line_balance_key, type: text, nullable: false}
+      - {name: bank_key, type: text, nullable: false}
+      - {name: month_key, type: integer, nullable: false}
+      - {name: reporting_line_key, type: text, nullable: false}
+      - {name: source_file_key, type: text, nullable: false}
+      - {name: report_month, type: date, nullable: false}
+      - {name: document_code, type: text, nullable: false}
+      - {name: institution_cnpj, type: text, nullable: false}
+      - {name: reporting_line_code, type: text, nullable: false}
+      - {name: mapping_version, type: text, nullable: false}
+      - {name: reported_balance_amount, type: numeric, nullable: false}
+      - {name: presentation_balance_amount, type: numeric, nullable: false}
+      - {name: contributing_account_count, type: integer, nullable: false}
+      - {name: contributing_account_codes, type: text, nullable: false}
+      - {name: is_fixture, type: boolean, nullable: false}
+    quality_rules: [unique_reporting_line_balance_key, four_lines_per_bank_month, exact_account_reconciliation, mapping_version_frozen, official_fixture_free]
+
+  - name: fact_macro_observation
+    kind: fact
+    grain: one native SGS observation date per governed series
+    primary_key: [macro_observation_key]
+    official_reference_rows: 75
+    columns:
+      - {name: macro_observation_key, type: text, nullable: false}
+      - {name: macro_series_key, type: text, nullable: false}
+      - {name: month_key, type: integer, nullable: false}
+      - {name: series_code, type: text, nullable: false}
+      - {name: source_observation_date, type: date, nullable: false}
+      - {name: report_month, type: date, nullable: false}
+      - {name: value, type: numeric_38_10, nullable: false}
+      - {name: value_raw, type: text, nullable: false}
+      - {name: retrieved_at_utc, type: timestamptz, nullable: false}
+      - {name: source_url, type: text, nullable: false}
+      - {name: is_fixture, type: boolean, nullable: false}
+    quality_rules: [unique_macro_observation_key, five_series_by_fifteen_months, official_fixture_free]
+
+  - name: fact_monthly_economic_context
+    kind: fact
+    grain: one report month per governed macro series
+    primary_key: [monthly_context_key]
+    official_reference_rows: 75
+    columns:
+      - {name: monthly_context_key, type: text, nullable: false}
+      - {name: macro_series_key, type: text, nullable: false}
+      - {name: month_key, type: integer, nullable: false}
+      - {name: report_month, type: date, nullable: false}
+      - {name: series_code, type: text, nullable: false}
+      - {name: display_name, type: text, nullable: false}
+      - {name: unit, type: text, nullable: false}
+      - {name: derived_metric, type: text, nullable: false}
+      - {name: value, type: numeric_38_10, nullable: false}
+      - {name: source_observation_date, type: date, nullable: false}
+      - {name: is_fixture, type: boolean, nullable: false}
+    quality_rules: [unique_monthly_context_key, five_series_by_fifteen_months, no_causal_interpretation, official_fixture_free]

@@ -1,0 +1,155 @@
+/// Source-account drill-through fact: one selected 4010 row per stable-population
+/// bank, month and COSIF account. Supports tracing a reporting line back to the exact
+/// source accounts. Large (121,092 rows); not the page-level fact.
+table 'Account Balance'
+	lineageTag: 2b3c4d5e-0900-4000-8000-000000000900
+
+	/// Sum of source-account balances in the current selection, in nominal reais.
+	/// Because COSIF accounts are hierarchical, only sum this within a single account
+	/// level (for example the mapped reporting-line components), never across levels.
+	measure 'Account Balance Amount' = SUM ( 'Account Balance'[balance_amount] )
+		formatString: "R$"#,0;-"R$"#,0
+		displayFolder: Drill-through
+		lineageTag: 2b3c4d5e-0950-4000-8000-000000000950
+
+	column account_balance_key
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 2b3c4d5e-0901-4000-8000-000000000901
+		summarizeBy: none
+		sourceColumn: account_balance_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column bank_key
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0902-4000-8000-000000000902
+		summarizeBy: none
+		sourceColumn: bank_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2b3c4d5e-0903-4000-8000-000000000903
+		summarizeBy: none
+		sourceColumn: month_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column account_key
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0904-4000-8000-000000000904
+		summarizeBy: none
+		sourceColumn: account_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column source_file_key
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0905-4000-8000-000000000905
+		summarizeBy: none
+		sourceColumn: source_file_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Account Code'
+		dataType: string
+		lineageTag: 2b3c4d5e-0906-4000-8000-000000000906
+		summarizeBy: none
+		sourceColumn: account_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Account Name'
+		dataType: string
+		lineageTag: 2b3c4d5e-0907-4000-8000-000000000907
+		summarizeBy: none
+		sourceColumn: account_name
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Hidden: exposed through the 'Account Balance Amount' measure.
+	column balance_amount
+		dataType: double
+		isHidden
+		lineageTag: 2b3c4d5e-0908-4000-8000-000000000908
+		summarizeBy: sum
+		sourceColumn: balance_amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column source_checksum
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-0909-4000-8000-000000000909
+		summarizeBy: none
+		sourceColumn: source_checksum
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_fixture
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2b3c4d5e-090a-4000-8000-00000000090a
+		summarizeBy: none
+		sourceColumn: is_fixture
+
+		annotation SummarizationSetBy = Automatic
+
+	column report_month
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c451d762-b0d4-4170-b42b-2efc11734f7a
+		summarizeBy: none
+		sourceColumn: report_month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column document_code
+		dataType: string
+		lineageTag: d793363c-0d10-454a-9f4a-f17e625f021e
+		summarizeBy: none
+		sourceColumn: document_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column institution_cnpj
+		dataType: string
+		lineageTag: 66ce1651-79ce-4b83-aaca-7a022139f91d
+		summarizeBy: none
+		sourceColumn: institution_cnpj
+
+		annotation SummarizationSetBy = Automatic
+
+	column file_row_number
+		dataType: int64
+		formatString: 0
+		lineageTag: 3ce1d816-f8e0-4361-882f-d0f5d84cd83b
+		summarizeBy: sum
+		sourceColumn: file_row_number
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Account Balance' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(WarehouseServer, WarehouseDatabase),
+				    Data = Source{[Schema="analytics_marts",Item="fact_account_balance"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table
+

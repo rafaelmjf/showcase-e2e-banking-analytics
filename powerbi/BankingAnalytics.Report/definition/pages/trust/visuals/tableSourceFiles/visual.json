@@ -1,0 +1,134 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.11.0/schema.json",
+  "name": "tableSourceFiles",
+  "position": {
+    "x": 24,
+    "y": 240,
+    "z": 0,
+    "height": 316,
+    "width": 764,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Source File"
+                    }
+                  },
+                  "Property": "Source Period"
+                }
+              },
+              "queryRef": "Source File.Source Period",
+              "nativeQueryRef": "Source Period"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Source File"
+                    }
+                  },
+                  "Property": "Checksum"
+                }
+              },
+              "queryRef": "Source File.Checksum",
+              "nativeQueryRef": "Checksum"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Source File"
+                    }
+                  },
+                  "Property": "Generated At"
+                }
+              },
+              "queryRef": "Source File.Generated At",
+              "nativeQueryRef": "Generated At"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Source File"
+                    }
+                  },
+                  "Property": "Retrieved At (UTC)"
+                }
+              },
+              "queryRef": "Source File.Retrieved At (UTC)",
+              "nativeQueryRef": "Retrieved At (UTC)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Source File"
+                    }
+                  },
+                  "Property": "Declared Row Count"
+                }
+              },
+              "queryRef": "Source File.Declared Row Count",
+              "nativeQueryRef": "Declared Row Count"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Source File"
+                  }
+                },
+                "Property": "Source Period"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Selected source files (period, checksum, generation and retrieval)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

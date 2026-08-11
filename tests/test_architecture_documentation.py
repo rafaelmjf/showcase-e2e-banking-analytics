@@ -18,13 +18,17 @@ def test_architecture_lists_every_implemented_data_asset() -> None:
 
     missing = sorted(name for name in dbt_models | raw_tables if name not in architecture)
 
-    assert len(dbt_models) == 11
+    assert len(dbt_models) == 24
     assert not missing, f"Architecture guide is missing implemented assets: {missing}"
 
 
-def test_architecture_keeps_unimplemented_consumption_layer_explicit() -> None:
+def test_architecture_keeps_certified_marts_and_planned_bi_explicit() -> None:
     architecture = Path("docs/architecture.md").read_text(encoding="utf-8")
 
-    assert "The current implementation stops at the canonical core" in architecture
-    assert "Full official Dagster + dbt run | Defined; not certified" in architecture
+    assert (
+        "The current implementation reaches the frozen dimensional consumption boundary"
+        in architecture
+    )
+    assert "Full official Dagster + dbt run | Certified for 202501–202603" in architecture
+    assert "Mart schema contract | Frozen for all twelve consumption objects" in architecture
     assert "Power BI TMDL, pages and trust panel | Planned" in architecture

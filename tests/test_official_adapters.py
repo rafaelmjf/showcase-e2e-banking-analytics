@@ -263,7 +263,7 @@ def test_mocked_official_evidence_loads_through_dlt(
                 "BANKING_OFFICIAL_MACRO_END": "2025-01-31",
             }
         )
-        assert len(definitions.resolve_asset_graph().get_all_asset_keys()) == 16
+        assert len(definitions.resolve_asset_graph().get_all_asset_keys()) == 31
         assert definitions.resolve_job_def("official_end_to_end").name == "official_end_to_end"
         with psycopg.connect(test_settings.dsn) as connection:
             counts = connection.execute(

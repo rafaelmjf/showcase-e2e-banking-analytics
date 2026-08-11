@@ -1,0 +1,93 @@
+version: 2
+
+models:
+  - name: dim_bank
+    description: Stable official top-15 bank population, with fixture-only fallback members for mechanical CI.
+    columns:
+      - {name: bank_key, data_tests: [not_null, unique]}
+      - {name: institution_cnpj, data_tests: [not_null, unique]}
+      - {name: freeze_rank, data_tests: [not_null, unique]}
+      - {name: is_fixture, data_tests: [not_null]}
+
+  - name: dim_cosif_account
+    description: Current account descriptions with compact class/group attributes and mapping status.
+    columns:
+      - {name: account_key, data_tests: [not_null, unique]}
+      - {name: account_code, data_tests: [not_null, unique]}
+      - {name: account_name, data_tests: [not_null]}
+
+  - name: dim_reporting_line
+    description: Four certified public reporting lines under mapping version 2026-08-11-v1.
+    columns:
+      - {name: reporting_line_key, data_tests: [not_null, unique]}
+      - {name: reporting_line_code, data_tests: [not_null, unique]}
+      - {name: mapping_version, data_tests: [not_null]}
+
+  - name: dim_document
+    description: Governed interpretation of monthly 4010 and excluded semiannual 4016.
+    columns:
+      - {name: document_code, data_tests: [not_null, unique]}
+      - {name: analytical_allowed, data_tests: [not_null]}
+
+  - name: dim_macro_series
+    description: Business-facing macro series dimension preserving official semantic metadata.
+    columns:
+      - {name: macro_series_key, data_tests: [not_null, unique]}
+      - {name: series_code, data_tests: [not_null, unique]}
+
+  - name: dim_date
+    description: One row per observed reporting month with calendar hierarchy attributes.
+    columns:
+      - {name: month_key, data_tests: [not_null, unique]}
+      - {name: month_start, data_tests: [not_null, unique]}
+
+  - name: dim_source_file
+    description: Selected source checksum and operational provenance for trust-panel use.
+    columns:
+      - {name: source_file_key, data_tests: [not_null, unique]}
+      - {name: source_checksum, data_tests: [not_null, unique]}
+      - {name: is_selected, data_tests: [not_null]}
+
+  - name: bridge_account_reporting_line
+    description: Seven non-overlapping top-level COSIF component assignments to four reporting lines.
+    columns:
+      - {name: account_reporting_line_key, data_tests: [not_null, unique]}
+      - {name: account_code, data_tests: [not_null, unique]}
+      - {name: reporting_line_key, data_tests: [not_null]}
+      - {name: mapping_version, data_tests: [not_null]}
+
+  - name: fact_account_balance
+    description: Source-account drill-through fact limited to stable comparison banks and document 4010.
+    columns:
+      - {name: account_balance_key, data_tests: [not_null, unique]}
+      - {name: bank_key, data_tests: [not_null]}
+      - {name: month_key, data_tests: [not_null]}
+      - {name: account_key, data_tests: [not_null]}
+      - {name: source_file_key, data_tests: [not_null]}
+      - {name: balance_amount, data_tests: [not_null]}
+
+  - name: fact_reporting_line_balance
+    description: Auditable bank-month reporting-line balances aggregated from mapped top-level accounts.
+    columns:
+      - {name: reporting_line_balance_key, data_tests: [not_null, unique]}
+      - {name: bank_key, data_tests: [not_null]}
+      - {name: month_key, data_tests: [not_null]}
+      - {name: reporting_line_key, data_tests: [not_null]}
+      - {name: presentation_balance_amount, data_tests: [not_null]}
+      - {name: mapping_version, data_tests: [not_null]}
+
+  - name: fact_macro_observation
+    description: Native macro observation fact with governed month and series foreign keys.
+    columns:
+      - {name: macro_observation_key, data_tests: [not_null, unique]}
+      - {name: macro_series_key, data_tests: [not_null]}
+      - {name: month_key, data_tests: [not_null]}
+      - {name: value, data_tests: [not_null]}
+
+  - name: fact_monthly_economic_context
+    description: Monthly aligned long-form macro context for report visuals; no causal interpretation.
+    columns:
+      - {name: monthly_context_key, data_tests: [not_null, unique]}
+      - {name: macro_series_key, data_tests: [not_null]}
+      - {name: month_key, data_tests: [not_null]}
+      - {name: value, data_tests: [not_null]}

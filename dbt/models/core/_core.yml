@@ -52,3 +52,14 @@ models:
       - {name: source_observation_date, data_tests: [not_null]}
       - {name: report_month, data_tests: [not_null]}
       - {name: value, data_tests: [not_null]}
+
+  - name: reporting_line_mapping
+    description: Reviewed versioned mapping of seven non-overlapping top-level COSIF balances.
+    columns:
+      - {name: account_code, data_tests: [not_null, unique]}
+      - {name: reporting_line_key, data_tests: [not_null]}
+      - {name: mapping_version, data_tests: [not_null]}
+      - name: status
+        data_tests:
+          - accepted_values:
+              arguments: {values: [certified]}

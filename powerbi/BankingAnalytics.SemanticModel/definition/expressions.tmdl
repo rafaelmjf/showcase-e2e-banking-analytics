@@ -1,0 +1,14 @@
+expression WarehouseServer = "localhost:55433" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 2b3c4d5e-0001-4000-8000-000000000001
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+
+expression WarehouseDatabase = "banking_official_202501_202603" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 2b3c4d5e-0002-4000-8000-000000000002
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Text
+

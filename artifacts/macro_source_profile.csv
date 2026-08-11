@@ -1,0 +1,6 @@
+series_code,status,requested_start_month,requested_end_month,row_count,first_observation_date,last_observation_date,first_report_month,last_report_month,internal_missing_month_count,internal_missing_months,duplicate_observation_date_count,duplicate_report_month_count,lag_months_to_requested_end,max_expected_lag_months,error
+4189,complete,202501,202603,15,2025-01-01,2026-03-01,202501,202603,0,,0,0,0,1,
+433,complete,202501,202603,15,2025-01-01,2026-03-01,202501,202603,0,,0,0,0,1,
+24363,complete,202501,202603,15,2025-01-01,2026-03-01,202501,202603,0,,0,0,0,3,
+20539,complete,202501,202603,15,2025-01-01,2026-03-01,202501,202603,0,,0,0,0,3,
+21082,complete,202501,202603,15,2025-01-01,2026-03-01,202501,202603,0,,0,0,0,3,

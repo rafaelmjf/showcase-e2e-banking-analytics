@@ -1,0 +1,5 @@
+reporting_line,status,document_code,account_expression,account_codes,presentation_sign,top15_period_coverage,decision,rationale
+total_assets,certified,4010,1000000009 + 2000000008,1000000009|2000000008,positive,225/225,approved,"Ordinary patrimonial assets; compensation class 3 is excluded and total-general is reference-only."
+credit_portfolio,draft,4010,1600000007 plus candidates 1700000000 and 1810000000,1600000007|1700000000|1810000000,positive,160=225/225|170=67/225|181=210/225,requires_mapping_review,"Core operations of credit are universal in the top 15; leasing and other credit-characteristic balances need an explicit inclusion decision."
+deposits,draft,4010,4100000009,4100000009,positive,225/225,requires_mapping_reconciliation,"The top-level deposit balance is universal in the top 15 but must reconcile through the future mapped mart."
+equity,draft,4010,6000000004,6000000004,positive,225/225,requires_mapping_reconciliation,"The top-level equity balance is universal in the top 15 but must reconcile through the future mapped mart."

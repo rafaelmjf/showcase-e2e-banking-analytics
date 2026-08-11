@@ -1,0 +1,109 @@
+/// The stable comparison population: the top 15 individual institutions ranked by
+/// total assets at 202603, held fixed across all fifteen months. These are individual
+/// legal entities, not consolidated banking groups.
+table Bank
+	lineageTag: 2b3c4d5e-0200-4000-8000-000000000200
+
+	column bank_key
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 2b3c4d5e-0201-4000-8000-000000000201
+		summarizeBy: none
+		sourceColumn: bank_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Institution tax identifier (CNPJ). The source business key.
+	column CNPJ
+		dataType: string
+		lineageTag: 2b3c4d5e-0202-4000-8000-000000000202
+		summarizeBy: none
+		sourceColumn: institution_cnpj
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Institution name as published by the source.
+	column 'Bank Name'
+		dataType: string
+		lineageTag: 2b3c4d5e-0203-4000-8000-000000000203
+		summarizeBy: none
+		sourceColumn: institution_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column Taxonomy
+		dataType: string
+		lineageTag: 2b3c4d5e-0204-4000-8000-000000000204
+		summarizeBy: none
+		sourceColumn: taxonomy
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Rank 1-15 by total assets at the freeze month. Fixed for the whole period.
+	column 'Freeze Rank'
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b3c4d5e-0205-4000-8000-000000000205
+		summarizeBy: none
+		sourceColumn: freeze_rank
+
+		annotation SummarizationSetBy = Automatic
+
+	column freeze_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0206-4000-8000-000000000206
+		summarizeBy: none
+		sourceColumn: freeze_month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column first_report_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0207-4000-8000-000000000207
+		summarizeBy: none
+		sourceColumn: first_report_month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column last_report_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0208-4000-8000-000000000208
+		summarizeBy: none
+		sourceColumn: last_report_month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column is_fixture
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2b3c4d5e-0209-4000-8000-000000000209
+		summarizeBy: none
+		sourceColumn: is_fixture
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Bank = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(WarehouseServer, WarehouseDatabase),
+				    Data = Source{[Schema="analytics_marts",Item="dim_bank"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table
+

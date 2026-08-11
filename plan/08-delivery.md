@@ -43,6 +43,8 @@ check goal usage, and stop for review before consuming the next package.
 Implement dlt sources, PostgreSQL landing, dbt core/marts/tests, Dagster assets,
 reconciliation and the frozen mart contract.
 
+**State:** complete and certified in checkpoint 12.
+
 **Evidence:** dlt load packages, dbt lineage, Dagster asset run, reconciliation,
 mapping coverage and active-file manifest.
 
@@ -92,7 +94,7 @@ prioritised gates in [09-future-enhancements.md](09-future-enhancements.md).
    January 2025 onward.
 2. Source, canonical and mart balances reconcile for the certified reporting lines.
 3. Top-15 membership is reproducible and stable across the report period.
-4. Dagster materialises the fixture pipeline and bounded live sample.
+4. Dagster materialises the fixture and frozen full-window official graphs.
 5. Power BI consumes only frozen marts and passes regression tests.
 6. Banking Pulse, Compare Banks and the trust panel are complete.
 7. Documentation explains the project without requiring COSIF knowledge.

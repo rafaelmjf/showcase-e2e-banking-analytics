@@ -1,0 +1,52 @@
+relationship ReportingLine_Date
+	fromColumn: 'Reporting Line Balance'.month_key
+	toColumn: Date.month_key
+
+relationship ReportingLine_Bank
+	fromColumn: 'Reporting Line Balance'.bank_key
+	toColumn: Bank.bank_key
+
+relationship ReportingLine_Line
+	fromColumn: 'Reporting Line Balance'.reporting_line_key
+	toColumn: 'Reporting Line'.reporting_line_key
+
+relationship ReportingLine_SourceFile
+	fromColumn: 'Reporting Line Balance'.source_file_key
+	toColumn: 'Source File'.source_file_key
+
+relationship AccountBalance_Date
+	fromColumn: 'Account Balance'.month_key
+	toColumn: Date.month_key
+
+relationship AccountBalance_Bank
+	fromColumn: 'Account Balance'.bank_key
+	toColumn: Bank.bank_key
+
+relationship AccountBalance_Account
+	fromColumn: 'Account Balance'.account_key
+	toColumn: 'COSIF Account'.account_key
+
+relationship AccountBalance_SourceFile
+	fromColumn: 'Account Balance'.source_file_key
+	toColumn: 'Source File'.source_file_key
+
+relationship Bridge_Account
+	fromColumn: 'Account Reporting Line'.account_key
+	toColumn: 'COSIF Account'.account_key
+
+relationship Bridge_Line
+	fromColumn: 'Account Reporting Line'.reporting_line_key
+	toColumn: 'Reporting Line'.reporting_line_key
+
+relationship Context_Date
+	fromColumn: 'Monthly Economic Context'.month_key
+	toColumn: Date.month_key
+
+relationship Context_Series
+	fromColumn: 'Monthly Economic Context'.macro_series_key
+	toColumn: 'Macro Series'.macro_series_key
+
+relationship AutoDetected_42ed599e-7dbb-4fd3-ba26-7a248bd63241
+	fromColumn: 'Account Balance'.document_code
+	toColumn: Document.'Document Code'
+

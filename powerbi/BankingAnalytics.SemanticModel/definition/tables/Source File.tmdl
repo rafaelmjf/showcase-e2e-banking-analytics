@@ -1,0 +1,162 @@
+/// One row per selected official COSIF source file (one per month). Carries the
+/// provenance shown on the Trust page: source period, checksum, generation and
+/// retrieval timestamps. Only selected file versions are present.
+table 'Source File'
+	lineageTag: 2b3c4d5e-0400-4000-8000-000000000400
+
+	/// Most recent source reporting period present, as YYYYMM.
+	measure 'Latest Source Period' = MAX ( 'Source File'[Source Period] )
+		displayFolder: Trust
+		lineageTag: 2b3c4d5e-0450-4000-8000-000000000450
+
+	/// Number of selected official source files (one per month).
+	measure 'Selected Source Files' = COUNTROWS ( 'Source File' )
+		formatString: #,0
+		displayFolder: Trust
+		lineageTag: 2b3c4d5e-0451-4000-8000-000000000451
+
+	/// Distinct reporting months covered by the model.
+	measure 'Months Covered' = DISTINCTCOUNT ( 'Date'[month_key] )
+		formatString: #,0
+		displayFolder: Trust
+		lineageTag: 2b3c4d5e-0452-4000-8000-000000000452
+
+	column source_file_key
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 2b3c4d5e-0401-4000-8000-000000000401
+		summarizeBy: none
+		sourceColumn: source_file_key
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Source reporting period as YYYYMM.
+	column 'Source Period'
+		dataType: string
+		lineageTag: 2b3c4d5e-0402-4000-8000-000000000402
+		summarizeBy: none
+		sourceColumn: source_period
+
+		annotation SummarizationSetBy = Automatic
+
+	column report_month
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0403-4000-8000-000000000403
+		summarizeBy: none
+		sourceColumn: report_month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Publicly documented source URL for the selected file.
+	column 'Source URL'
+		dataType: string
+		lineageTag: 2b3c4d5e-0404-4000-8000-000000000404
+		summarizeBy: none
+		sourceColumn: source_url
+
+		annotation SummarizationSetBy = Automatic
+
+	/// SHA-256 of the selected source archive: the immutable version identity.
+	column Checksum
+		dataType: string
+		lineageTag: 2b3c4d5e-0405-4000-8000-000000000405
+		summarizeBy: none
+		sourceColumn: source_checksum
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Date the source declared the file was generated.
+	column 'Generated At'
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 2b3c4d5e-0406-4000-8000-000000000406
+		summarizeBy: none
+		sourceColumn: source_generated_at
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// When this project retrieved the file. Stated separately from source period.
+	column 'Retrieved At (UTC)'
+		dataType: dateTime
+		formatString: yyyy-mm-dd hh:nn:ss
+		lineageTag: 2b3c4d5e-0407-4000-8000-000000000407
+		summarizeBy: none
+		sourceColumn: retrieved_at_utc
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status
+		dataType: string
+		lineageTag: 2b3c4d5e-0408-4000-8000-000000000408
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column source_is_active
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2b3c4d5e-0409-4000-8000-000000000409
+		summarizeBy: none
+		sourceColumn: source_is_active
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_selected
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2b3c4d5e-040a-4000-8000-00000000040a
+		summarizeBy: none
+		sourceColumn: is_selected
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Row count the source declared for the file. Reconciliation evidence.
+	column 'Declared Row Count'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 2b3c4d5e-040b-4000-8000-00000000040b
+		summarizeBy: none
+		sourceColumn: declared_row_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_fixture
+		dataType: boolean
+		isHidden
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2b3c4d5e-040c-4000-8000-00000000040c
+		summarizeBy: none
+		sourceColumn: is_fixture
+
+		annotation SummarizationSetBy = Automatic
+
+	column dlt_load_id
+		dataType: string
+		isHidden
+		lineageTag: 2b3c4d5e-040d-4000-8000-00000000040d
+		summarizeBy: none
+		sourceColumn: dlt_load_id
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Source File' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database(WarehouseServer, WarehouseDatabase),
+				    Data = Source{[Schema="analytics_marts",Item="dim_source_file"]}[Data]
+				in
+				    Data
+
+	annotation PBI_ResultType = Table
+
