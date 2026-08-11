@@ -40,21 +40,25 @@ Direct access to all 20 tested URLs still returned HTTP 502. This is now an 0B f
 download blocker, not an 0A publication-discovery blocker. HTTP failures remain
 unknown accessibility, never false absence.
 
+Checkpoint 0B's downloader and profiler are implemented. They stream atomically,
+retain SHA-256 and byte evidence, validate ZIP/CRC/CSV structure, detect encoding and
+the source header, and produce the required per-period counts. Ruff and all 26 tests
+pass. A bounded live 202603 download failed cleanly with HTTP 502 and retained no
+partial file. See `docs/checkpoints/00b-schema-volume.md`.
+
 ## Next action
 
-Begin checkpoint 0B from `plan/08-delivery.md` using the catalog-selected active
-URLs. Retry the bounded download first:
+Resume checkpoint 0B from `plan/08-delivery.md` using the catalog-selected active
+URLs. Retry one bounded download first:
 
 ```powershell
-uv run --locked banking-data source-inventory --start 202501 --end 202603 `
-  --catalog artifacts/source_catalog.csv `
-  --output artifacts/source_inventory.csv
+uv run --locked banking-data download-cosif --start 202603 --end 202603 `
+  --catalog artifacts/source_catalog.csv --attempts 1
 ```
 
-When file access recovers, download active 202501–202603 files, record SHA-256 and
-byte counts, then publish the schema/volume profile. The active December 2025 URL is
-the replacement ending in `202512BANCOS.zip.csv.zip`, not the earlier conventional
-filename.
+When that succeeds, run the full download and profile commands recorded in the 0B
+checkpoint. The active December 2025 URL is the replacement ending in
+`202512BANCOS.zip.csv.zip`, not the earlier conventional filename.
 
 Do not begin the full dbt model until findings are recorded in
 `docs/source-profile.md`.

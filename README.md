@@ -38,7 +38,8 @@ been implemented yet.
   consolidated scopes are explicitly deferred.
 - Checkpoint 0A is complete: the official catalog confirms 15 published MVP months
   from January 2025 through March 2026 and identifies one superseded December 2025
-  file. Checkpoint 0B is waiting for recovery of direct file access after HTTP 502.
+  file. Checkpoint 0B's checksum/ZIP/schema profiler is implemented and tested, and
+  is waiting for recovery of direct file access after HTTP 502.
 
 Start with the [implementation plan](plan/README.md), the live
 [source-profile status](docs/source-profile.md), and the latest [handover](HANDOVER.md).
